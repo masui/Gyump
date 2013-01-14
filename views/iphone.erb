@@ -1,0 +1,18 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=320">
+    <title>Search page for <%= @root %></title>
+  </head>
+  <body style='background-color:#ffffdd'>
+    <center>
+      <a href="http://<%= @root %>/"><%= @root %></a>
+      <br>
+      <form method="post" action="http://<%= @root %>/">
+	<input name='short' type='text' size='10' style="font-size:16pt;">
+	<br>
+	<input type='submit'>
+      </form>
+    </center>
+  </body>
+</html>

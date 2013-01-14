@@ -1,0 +1,50 @@
+<form class="form-horizontal">
+  <% if @id == '' then %>
+  <div class="control-group">
+    <label class="control-label" for="short">Keyword:</label>
+    <div class="controls">
+      <input type="text" name="short" class="input-small" value='<%= @id %>'>
+    </div>
+  </div>
+  <% end %>
+  <div class="control-group">
+    <label class="control-label">URL / Memo:</label>
+    <div class="controls">
+      <input type="text" name="url" value='<%= @value %>'>
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label">Title:</label>
+    <div class="controls">
+      <input type="text" name="title" value='<%= @title %>'>
+    </div>
+  </div>
+  <div class="control-group">
+    <div class="controls">
+      <button type="submit" class="btn">Register</button>
+    </div>
+  </div>
+</form>
+
+
+<!--
+<form name="postform" method="post" enctype="application/x-www-form-urlencoded" action="http://<%= @root %>/">
+  <table>
+    <tr>
+      <td style="text-align:right;">Keyword:</td>
+      <td><input name='short' type='text' size='10' value='<%= @id %>'></input></td>
+    </tr>
+    <tr>
+      <td style="text-align:right;">URL/Memo:</td>
+      <td><input name='long' type='text' size='80' value='<%= @value %>'></input></td>
+    </tr>
+    <tr>
+      <td style="text-align:right;">Title:</td>
+      <td><input name='title' type='text' size='80' value='<%= @title %>'></input></td>
+    </tr>
+  </table>
+  <p></p>
+  <INPUT TYPE="submit" VALUE=" Register   ">
+  <INPUT NAME="register" TYPE="hidden" VALUE="1">
+</form>
+-->

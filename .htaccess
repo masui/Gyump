@@ -1,0 +1,21 @@
+# #Options +ExecCGI
+# #AddHandler cgi-script .cgi
+# 
+# RewriteEngine on
+# # RewriteCond %{REQUEST_URI} !/cgi/
+# RewriteRule ^iphone\.html$ /memo.cgi?short=iphone.html [L]
+# RewriteRule ^i$ /memo.cgi?short=iphone.html [L]
+# RewriteRule ^atom\.xml$ /memo.cgi?short=atom.xml [L]
+# RewriteRule ^addgyazz/(.*)$ /addgyazz.cgi?gyazzname=$1 [L]
+# RewriteRule ^([^\.]*)$ /memo.cgi?short=$1 [L]
+# RewriteRule ^opensearch.xml$ /opensearch.cgi [L]
+# RewriteRule ^dict.js$ /memo.cgi?short=dict.js [L]
+
+Options +ExecCGI
+AddHandler cgi-script .cgi
+Options +FollowSymLinks
+RewriteEngine on
+RewriteRule ^.*iphone\.html$ /memo.cgi?short=iphone.html [L]
+RewriteRule ^dict\.js$ /memo.cgi?short=dict.js [L]
+RewriteRule ^([^\.]*)$ /memo.cgi?short=$1 [L]
+

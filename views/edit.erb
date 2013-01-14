@@ -1,0 +1,19 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <link href="stylesheets/bootstrap.css" rel="stylesheet" media="screen">
+
+    <TITLE>Edit keyword <%= @short2 %></TITLE>
+
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="javascripts/bootstrap.js"></script>
+  </head>
+  <body style="margin:4pt;">
+
+  <h3><a href="http://<%= @root %>"><%= @root %></a> / <i style="color:orange;"><%= @short2 %></i></h3>
+
+  <%= form(@short2,@long,@title) %>
+
+  </body>
+</html>

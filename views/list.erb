@@ -1,0 +1,74 @@
+<!DOCTYPE HTML>
+<HTML>
+  <HEAD>
+    <META content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <LINK href="http://memo.3memo.com/atom.xml" type="application/atom+xml" rel="alternate" title="memo (Atom)">
+    <!-- <LINK href="/stylesheets/memo.css" type="text/css" rel="stylesheet"> -->
+    <LINK href="/3memo.png" rel="apple-touch-icon">
+
+    <link href="stylesheets/bootstrap.css" rel="stylesheet" media="screen">
+
+    <TITLE>Bookmarks of memo</TITLE>
+    <!-- script src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script> -->
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="javascripts/bootstrap.js"></script>
+  </HEAD>
+  <body style="margin:5pt;">
+
+  <h3>aaaaa</h3>
+
+    <ul>
+      <li><a class="btn btn-primary btn-small" href='' onClick='addp("http://memo.3memo.com/opensearch.cgi");'>Install search plugin</a> for Firefox/IE
+      <li>Use this bookmarklet
+      <a class="btn btn-primary btn-small"href="javascript:(function(){w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/memo.cgi?long='+escape(url)+'&title='+encodeURIComponent(dt);})()">Register to <%= @root %></a>
+      for quick registration.
+      <li>Use <a href="http://memo.3memo.com/iphone.html">this page</a> for quick access from iPhone
+    </ul>
+
+    <hr>
+
+    <div class="container">
+      <div class="span5">
+      <%= form %>
+      </div>
+    </div>
+
+    <hr>
+
+    <h3>List of bookmarks at <i><%= @host %></i></h3>
+
+    <blockquote>
+      <div class="span11">
+      <table class="table table-striped table-hover table-bordered table-condensed">
+	<%
+           count = 0
+	   @data.keys.sort { |a,b|
+             a.gsub(/\d+/){ |s| s.rjust(10,"0") } <=> b.gsub(/\d+/){ |s| s.rjust(10,"0") }
+	   }.collect { |key|
+             count += 1
+             d = @data[key].gsub(/</,'&lt;')
+             t = @title[key].to_s
+             t = d if t == ''
+             s = (d =~ /^http/ ? "<a href='#{d}'>#{t}</a>" : d)
+        %>
+             <tr><td class='td1<%= count%2 %>'><a href='http://<%= @root %>/<%= key %>?'><%= key %></a></td><td class='td2<%= count%2 %>'><%= s %></td></tr>
+        <% }  %>
+
+	<tr><td class='td11'><a href='http://memo.masui.org/aaa?'>aaa</a></td><td class='td21'>bbb</td></tr>
+	<tr><td class='td10'><a href='http://memo.masui.org/bbb?'>bbb</a></td><td class='td20'>ccc</td></tr>
+      </table>
+      </div>
+    </blockquote>
+
+    <script type="text/javascript">
+function addp(csurl){
+  try { 
+    window.external.AddSearchProvider(csurl);
+  } catch (e) { 
+    //alert("Firefox(2.0以降)の使用、Internet Explorer(7.0以降)の直接使用の場合にプラグインが可能です。");
+    alert("You can use a search plugin on Firefox(2.0 or later) and Internet Explorer(7.0 or later).");
+  }
+}
+    </script>
+  </BODY>
+</HTML>
