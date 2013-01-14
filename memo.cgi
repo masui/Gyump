@@ -270,31 +270,14 @@ EOF
   def opensearch
     @cgi.out { erb :opensearch }
   end
+
   def show
-    if @dbm[@ind].to_s =~ /^(http|coscriptrun)/ && # 2009/6/4 CoScripter対応
+    if @dbm[@ind].to_s =~ /^(http|javascript|coscriptrun)/ && # 2009/6/4 CoScripter対応
         @nojump != 'true' then
       # print @cgi.header({'status' => 'MOVED', 'Location' => @dbm[@ind].to_s, 'Time' => Time.now})
       print @cgi.header({'status' => 'REDIRECT', 'Location' => @dbm[@ind].to_s, 'Time' => Time.now})
     else
-      @cgi.out {
-        @cgi.html {
-          @cgi.head {
-            @cgi.meta('http-equiv' => 'Content-Type', 'content' => 'text/html; charset=utf-8') +
-            @cgi.link('rel' => "stylesheet", 'href' => "/3memo.css", 'type' => 'text/css') +
-            @cgi.link('rel' => "apple-touch-icon", 'href' => "/3memo.png") +
-            @cgi.title { @titledbm[@ind].to_s }
-          } +
-          @cgi.body {
-            # url = "http://#{@host}.3memo.com/"
-            # @dbm[@ind].to_s.gsub(/</,'&lt;') +
-            # "<p><a href='#{url}'>#{url}</a>"
-            url = "http://#{@host}.3memo.com/#{@short}"
-            "<img src='http://mozshot.nemui.org/shot?#{@dbm[@ind].to_s}'><p>" +
-            @dbm[@ind].to_s.gsub(/</,'&lt;') +
-            "<p><a href='#{url}!'>編集</a>"
-          }
-        }
-      }
+      edit
     end
   end
 end

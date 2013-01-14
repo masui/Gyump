@@ -3,6 +3,7 @@
   <head>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
     <link href="stylesheets/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="stylesheets/memo.css" rel="stylesheet" media="screen">
 
     <TITLE><%= @title %></TITLE>
 
@@ -11,12 +12,11 @@
   </head>
   <body style="margin:5pt;">
 
-  <h3><a href="http://<%= @root %>"><%= @root %></a> / <i style="color:orange;"><%= @short2 %></i></h3>
+  <h3><a href="http://<%= @root %>"><%= @root %></a> / <i class="keyword"><%= @short2 %></i></h3>
 
   <%= form(@short2,@long,@title) %>
 
   <hr>
-  Bookmark this page for jumping to the URL.
-
+  <a class="btn btn-info btn-small" href="javascript:(function(){if(window.sidebar){window.sidebar.addPanel(window.title,location.href,'')}else{window.external.AddFavorite(location.href,window.title);}})()">Bookmark this page</a>
   </body>
 </html>

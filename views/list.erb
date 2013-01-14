@@ -3,7 +3,7 @@
   <HEAD>
     <META content="text/html; charset=utf-8" http-equiv="Content-Type">
     <LINK href="http://<%= @root %>/atom.xml" type="application/atom+xml" rel="alternate" title="memo (Atom)">
-    <!-- <LINK href="/stylesheets/memo.css" type="text/css" rel="stylesheet"> -->
+    <LINK href="/stylesheets/memo.css" type="text/css" rel="stylesheet">
     <LINK href="/3memo.png" rel="apple-touch-icon">
 
     <link href="stylesheets/bootstrap.css" rel="stylesheet" media="screen">
@@ -14,52 +14,55 @@
     <script src="javascripts/bootstrap.js"></script>
   </HEAD>
   <body style="margin:5pt;">
-
-  <h3>Goodies</h3>
-
-    <ul>
-      <li><a class="btn btn-primary btn-small" href='' onClick='addp("http://<%= @root %>/opensearch");'>Install search plugin</a> for Firefox/IE
-      <li>Use the bookmarklet
-      [ <a class="btn btn-primary btn-small"href="javascript:(function(){w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/memo.cgi?long='+escape(url)+'&title='+encodeURIComponent(dt);})()">Register to <%= @root %></a> ]
-      for quick memo registration.
-      <li>Use <a class="btn btn-primary btn-small" href="http://<%= @root %>/iphone.html">this page</a> for quick access from iPhone
-    </ul>
-
-    <hr>
-    <h3>Register a new memo</h3>
-
-    <div class="container">
-      <div class="span5">
-      <%= form %>
-      </div>
-    </div>
+    <h1>Internet Memo</h1>
 
     <hr>
     <h3>List of memos at <i><%= @root %></i></h3>
 
-    <blockquote>
+    <div class="container">
       <div class="span11">
       <table class="table table-striped table-hover table-bordered table-condensed">
 	<%
 	   @data.keys.sort { |a,b|
              a.gsub(/\d+/){ |s| s.rjust(10,"0") } <=> b.gsub(/\d+/){ |s| s.rjust(10,"0") }
 	   }.collect { |key|
-	   log @title.to_s
-	   log key
              d = @data[key].gsub(/</,'&lt;')
              t = @titles[key].to_s
-           log t
              t = d if t == ''
-             s = (d =~ /^http/ ? "<a href='#{d}'>#{t}</a>" : d)
+             s = (d =~ /^(http|javascript)/ ? "<a href='#{d}'>#{t}</a>" : "<a href='http://#{@root}/#{key}'>#{t}</a>")
         %>
            <tr>
-	     <td class="span2"><a href='http://<%= @root %>/<%= key %>?'><%= key %></a></td>
+	     <td class="span2"><a href='http://<%= @root %>/<%= key %>?' class="keyword"><%= key %></a></td>
 	     <td><%= s %></td>
 	   </tr>
         <% }  %>
       </table>
       </div>
-    </blockquote>
+    </div>
+
+  <hr>
+  <h3>Goodies</h3>
+
+    <ul>
+      <li><a class="btn btn-info btn-small" href='' onClick='addp("http://<%= @root %>/opensearch");'>Install search plugin</a> for Firefox/IE
+      <li>Use the bookmarklet
+      [ <a class="btn btn-info btn-small" href="javascript:(function(){w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/memo.cgi?long='+escape(url)+'&title='+encodeURIComponent(dt);})()">Register to <%= @root %></a> ]
+      for quick memo registration.
+      <!--
+      <li>
+      <a class="btn btn-info btn-small" href="javascript:(function(){s=%22javascript:(function(){w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/memo.cgi?long='+escape(url)+'&title='+encodeURIComponent(dt);})()%22;t='REGISTER';if(window.sidebar){alert(s);window.sidebar.addPanel(t,s,'')}else{window.external.AddFavorite(s,t);}})()">Create bookmarklet</a>
+      -->
+      <li>Use <a class="btn btn-info btn-small" href="http://<%= @root %>/iphone.html">this page</a> for quick access from iPhone
+    </ul>
+
+    <hr>
+    <h3>Create a new memo</h3>
+
+    <div class="container">
+      <div class="span5">
+      <%= form %>
+      </div>
+    </div>
 
     <script type="text/javascript">
 function addp(csurl){
