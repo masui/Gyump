@@ -22,6 +22,12 @@ class Memo
   # http://abc.masui.3memo.com/def/ghi/ => http://ghi.def.abc.masui.3memo.com/   ghi.def.abc.masui  ''      abc.masui  def/ghi/
   # http://abc.masui.3memo.com/def/ghi  => http://def.abc.masui.3memo.com/ghi    def.abc.masui      ghi     abc.masui  def/ghi
 
+  def log(s)
+    File.open("log/log","a"){ |f|
+      f.puts s
+    }
+  end
+
   def convert(host,short)
     if host == '' && short !~ /\// then
       short += '/'
@@ -73,28 +79,13 @@ class Memo
     (@host,@short) = convert(@host,@short)
     @root = "#{@host}.#{@hostname}"
 
-#    File.open("/tmp/ll","w"){ |f|
-#      f.puts "short=#{@short}"
-#      f.puts "host=#{@host}"
-#      f.puts "title=#{@title}"
-#    }
-    File.open("log/log","a"){ |f|
-      f.puts "#{Time.now.strftime('%Y%m%d%H%M%S')} #{@host} #{@short}"
-    }
+    log "#{Time.now.strftime('%Y%m%d%H%M%S')} #{@host} #{@short}"
 
     @short2 = @short.sub(/!$/,'')
     @ind = "#{@host}/#{@short2}"
     @register = @cgi['register'].to_s
 
-#    File.open("/tmp/lll","w"){ |f|
-#      f.puts "short=#{@short}"
-#      f.puts "short2=#{@short2}"
-#      f.puts "host=#{@host}"
-#      f.puts "title=#{@title}"
-#      f.puts "long=#{@long}"
-#      f.puts "ind=#{@ind}"
-#      f.puts "@dbm[ind]=#{@dbm[@ind]}"
-#    }
+    log "register=#{@register}, ind=#{@ind}, title=#{@title}"
   end
 
   def form(id='',value='',title='')
@@ -112,9 +103,8 @@ class Memo
   end
 
   def google
-    File.open("log/log","a"){ |f|
-      f.puts "#{Time.now.strftime('%Y%m%d%H%M%S')} #{@host} #{@short} (Google)"
-    }
+    log "#{Time.now.strftime('%Y%m%d%H%M%S')} #{@host} #{@short} (Google)"
+
     print @cgi.header({'status' => 'MOVED', 'Location' => "http://google.com/search?q=#{@short}"})
   end
 
@@ -247,18 +237,17 @@ EOF
 
   def getdata
     @data = {}
-    @title = {}
+    @titles = {}
     @dbm.each { |key,value|
       if key =~ /^#{@host}\/(.*)/ then
         @data[$1] = value
-        @title[$1] = @titledbm[key]
+        @titles[$1] = @titledbm[key]
       end
     }
   end
 
   def list
     getdata
-
     @cgi.out { erb :list }
   end
 
@@ -307,13 +296,9 @@ EOF
 
 
   def edit?
-    File.open("log/log","a"){ |f|
-      f.puts "REFERER = #{ENV['HTTP_REFERER']}"
-    }
     @long == '' && (@short =~ /!$/ || @dbm[@ind].to_s == '') ||
       @long != '' && @short == '' ||
       @long == '' && ENV['HTTP_REFERER'].to_s.index(@root) # Don't jump if came from the memo site.
-
   end
 
   def edit
@@ -351,7 +336,6 @@ EOF
     @titledbm[@ind] = @title
     @datedbm[@ind] = Time.now.strftime("%Y-%m-%dT%H:%M:%S+00:00")
     self.list
-    # self.show
   end
 
   def show

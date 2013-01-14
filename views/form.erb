@@ -1,22 +1,22 @@
-<form class="form-horizontal">
+<form name="postform" method="post" enctype="application/x-www-form-urlencoded" action="http://<%= @root %>/" class="form-horizontal">
   <% if @id == '' then %>
   <div class="control-group">
     <label class="control-label" for="short">Keyword:</label>
     <div class="controls">
-      <input type="text" name="short" class="input-small" value='<%= @id %>'>
+      <input type="text" name="short" placeholder = "Short keyword (e.g. gog)" class="input-normal" value='<%= @id %>'>
     </div>
   </div>
   <% end %>
   <div class="control-group">
     <label class="control-label">URL / Memo:</label>
     <div class="controls">
-      <input type="text" name="url" value='<%= @value %>'>
+      <input type="text" name="long" placeholder="URL or string (e.g. http://Google.com/)" value='<%= @value %>' class="input-xxlarge">
     </div>
   </div>
   <div class="control-group">
-    <label class="control-label">Title:</label>
+    <label class="control-label">Description:</label>
     <div class="controls">
-      <input type="text" name="title" value='<%= @title %>'>
+      <input type="text" name="title" placeholder="Description (e.g. Google search page)" value='<%= @title %>' class="input-xxlarge">
     </div>
   </div>
   <div class="control-group">
@@ -24,27 +24,8 @@
       <button type="submit" class="btn">Register</button>
     </div>
   </div>
+  <input name="register" type="hidden" value="1">
+  <input name="short" type="hidden" value="<%= @id %>">
 </form>
 
 
-<!--
-<form name="postform" method="post" enctype="application/x-www-form-urlencoded" action="http://<%= @root %>/">
-  <table>
-    <tr>
-      <td style="text-align:right;">Keyword:</td>
-      <td><input name='short' type='text' size='10' value='<%= @id %>'></input></td>
-    </tr>
-    <tr>
-      <td style="text-align:right;">URL/Memo:</td>
-      <td><input name='long' type='text' size='80' value='<%= @value %>'></input></td>
-    </tr>
-    <tr>
-      <td style="text-align:right;">Title:</td>
-      <td><input name='title' type='text' size='80' value='<%= @title %>'></input></td>
-    </tr>
-  </table>
-  <p></p>
-  <INPUT TYPE="submit" VALUE=" Register   ">
-  <INPUT NAME="register" TYPE="hidden" VALUE="1">
-</form>
--->
