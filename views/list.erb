@@ -2,7 +2,7 @@
 <HTML>
   <HEAD>
     <META content="text/html; charset=utf-8" http-equiv="Content-Type">
-    <LINK href="http://memo.3memo.com/atom.xml" type="application/atom+xml" rel="alternate" title="memo (Atom)">
+    <LINK href="http://<%= @root %>/atom.xml" type="application/atom+xml" rel="alternate" title="memo (Atom)">
     <!-- <LINK href="/stylesheets/memo.css" type="text/css" rel="stylesheet"> -->
     <LINK href="/3memo.png" rel="apple-touch-icon">
 
@@ -18,15 +18,15 @@
   <h3>Goodies</h3>
 
     <ul>
-      <li><a class="btn btn-primary btn-small" href='' onClick='addp("http://memo.3memo.com/opensearch.cgi");'>Install search plugin</a> for Firefox/IE
+      <li><a class="btn btn-primary btn-small" href='' onClick='addp("http://<%= @root %>/opensearch");'>Install search plugin</a> for Firefox/IE
       <li>Use the bookmarklet
       [ <a class="btn btn-primary btn-small"href="javascript:(function(){w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/memo.cgi?long='+escape(url)+'&title='+encodeURIComponent(dt);})()">Register to <%= @root %></a> ]
-      for quick registration.
+      for quick memo registration.
       <li>Use <a class="btn btn-primary btn-small" href="http://<%= @root %>/iphone.html">this page</a> for quick access from iPhone
     </ul>
 
     <hr>
-    <h3>Memo registration</h3>
+    <h3>Register a new memo</h3>
 
     <div class="container">
       <div class="span5">

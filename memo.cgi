@@ -60,22 +60,6 @@ class Memo
     @long = @cgi['long'].to_s
     @title = @cgi['title'].to_s
 
-#     @cgi.out {
-#       s = ""
-#       s += "hostname = #{@hostname}"
-#       ENV.each { |key,val|
-#         s += "<br>ENV[#{key}] = #{val}"
-#       }
-#       s += "<br>short = #{@short}"
-#       s += "<br>host = #{@host}"
-#       s += "<br>title = #{@title}"
-#      (@host,@short) = convert(@host,@short)
-#       s += "<br>short = #{@short}"
-#       s += "<br>host = #{@host}"
-#       s
-#     }
-#exit
-
     (@host,@short) = convert(@host,@short)
     @root = "#{@host}.#{@hostname}"
 
@@ -210,7 +194,6 @@ EOF
         #end
       end
     }
-#    s = "[\n" + data.keys.sort.collect { |key|
     s = "[\n" + data.keys.sort { |a,b|
       a.gsub(/\d+/){ |s| s.rjust(10,"0") } <=>
       b.gsub(/\d+/){ |s| s.rjust(10,"0") }
@@ -251,54 +234,10 @@ EOF
     @cgi.out { erb :list }
   end
 
-#        @cgi.body {
-#          data = {}
-#          title = {}
-#          @dbm.each { |key,value|
-#            if key =~ /^#{@host}\/(.*)/ then
-#              data[$1] = value
-#              title[$1] = @titledbm[key]
-#            end
-#          }
-#          count = 0
-##          s = "<blockquote><table width=80%>\n" + data.keys.sort.collect { |key|
-#          s = "<blockquote><table>\n" + data.keys.sort { |a,b|
-#            a.gsub(/\d+/){ |s| s.rjust(10,"0") } <=>
-#            b.gsub(/\d+/){ |s| s.rjust(10,"0") }
-#          }.collect { |key|
-#            count += 1
-#            d = data[key].gsub(/</,'&lt;')
-#            t = title[key].to_s
-#            t = d if t == ''
-#            s = (d =~ /^http/ ? "<a href='#{d}'>#{t}</a>" : d)
-#            "<tr><td class='td1#{count%2}'><a href='http://#{@host}.3memo.com/#{key}!'>#{key}</a></td><td class='td2#{count%2}'>#{s}</td></tr>\n"
-#          }.join + "</table></blockquote>\n"
-#
-#          xml = "- <a href='' onClick='addp(\"http://#{@host}.3memo.com/opensearch.cgi\");'>Install search plugin</a> for Firefox/IE<p>"
-#          bookmarklet = "- Use this bookmarklet for quick registration. [<a href=\"javascript:(function(){w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://#{@host}.3memo.com/3memo.cgi?long='+escape(url)+'&title='+encodeURIComponent(dt);})()\">Register to #{@host}.3memo</a>]<p>"
-#          access = "- Use <a href=\"http://#{@host}.3memo.com/iphone.html\">this page</a> for quick access from iPhone<p>"
-#          nojump = "- <input id='nojump' type='checkbox'> Inhibit jump<p>"
-#          @cgi.h1{ "Bookmarks of <i>#{@host}</i>" } + s + "<hr>" + xml + bookmarklet + access + nojump + "<hr>" + form('','','') + <<EOF
-#<script type="text/javascript">
-#var TOP = "http://3memo.com";
-#var host = "#{@host}";
-#
-#function createXmlHttp(){
-#    if (window.ActiveXObject) {
-#        return new ActiveXObject("Microsoft.XMLHTTP");
-#    } else if (window.XMLHttpRequest) {
-#        return new XMLHttpRequest();
-#    } else {
-#        return null;
-#    }
-#}
-#
-
-
   def edit?
     @long == '' && (@short =~ /!$/ || @dbm[@ind].to_s == '') ||
       @long != '' && @short == '' ||
-      @long == '' && ENV['HTTP_REFERER'].to_s.index(@root) # Don't jump if came from the memo site.
+      @register == '' && @long == '' && ENV['HTTP_REFERER'].to_s.index(@root) # Don't jump if accessed from the memo site.
   end
 
   def edit
@@ -311,33 +250,26 @@ EOF
       erb :edit
     }
   end
-#      @cgi.html {
-#        @cgi.head {
-#          @cgi.meta('http-equiv' => 'Content-Type', 'content' => "text/html; charset=utf-8") +
-#          @cgi.link('rel' => "stylesheet", 'href' => "/3memo.css", 'type' => 'text/css') +
-#          @cgi.title { "Keyword registration" }
-#        } +
-#        @cgi.body {
-#          @cgi.h2 {
-#            "keyword registration for <a href='http://#{@root}/'><i>#{@host}</i></a>"
-#          } +
-#          form(@short2,long,title)
-#        }
-#      }
-#    }
-#  end
 
   def register?
     @register != ''
   end
 
   def register
+    log "long = #{@long}, title = #{@title}"
     @dbm[@ind] = (@long.length > 0 ? @long : nil)
     @titledbm[@ind] = @title
     @datedbm[@ind] = Time.now.strftime("%Y-%m-%dT%H:%M:%S+00:00")
     self.list
   end
 
+  def opensearch?
+    @short == 'opensearch'
+  end
+
+  def opensearch
+    @cgi.out { erb :opensearch }
+  end
   def show
     if @dbm[@ind].to_s =~ /^(http|coscriptrun)/ && # 2009/6/4 CoScripter対応
         @nojump != 'true' then
@@ -371,6 +303,8 @@ memo = Memo.new
 
 if memo.iphone? then
   memo.iphone
+elsif memo.opensearch? then
+  memo.opensearch
 #elsif memo.atom? then
 #  memo.atom
 elsif memo.dict? then
