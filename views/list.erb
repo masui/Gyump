@@ -48,6 +48,8 @@
       <li>Use the bookmarklet
       [ <a class="btn btn-info btn-small" href="javascript:(function(){w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/memo.cgi?long='+escape(url)+'&title='+encodeURIComponent(dt);})()">Register to <%= @root %></a> ]
       for quick memo registration.
+      <li>Use this bookmarklet
+[ <a class="btn btn-info btn-small" href="javascript:(function(){d=new%20Date;w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/memo.cgi?register=1&long='+escape(url)+'&title='+encodeURIComponent(dt)+'&short='+d.getFullYear()+('00'+(d.getMonth()+1)).slice(-2)+('00'+d.getDate()).slice(-2)+('00'+d.getHours()).slice(-2)+('00'+d.getMinutes()).slice(-2)+('00'+d.getSeconds()).slice(-2);})()">QUICK Registration to <%= @root %></a> ]
       <!--
       <li>
       <a class="btn btn-info btn-small" href="javascript:(function(){s=%22javascript:(function(){w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/memo.cgi?long='+escape(url)+'&title='+encodeURIComponent(dt);})()%22;t='REGISTER';if(window.sidebar){alert(s);window.sidebar.addPanel(t,s,'')}else{window.external.AddFavorite(s,t);}})()">Create bookmarklet</a>
