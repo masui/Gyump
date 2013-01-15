@@ -1,0 +1,14 @@
+<html>
+  <head>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
+    <link href="stylesheets/bootstrap.css" rel="stylesheet" media="screen">
+    <title><%= @titledbm[@ind].to_s %></title>
+  </head>
+  <body style="margin:10pt;">
+    <%= @dbm[@ind].to_s.gsub(/</,'&lt;') %>
+	<p></p>
+	<a href='<%= "http://#{@root}/#{@short}!" %>'>編集</a>
+</body>
+</html>
+
+
