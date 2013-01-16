@@ -100,10 +100,6 @@ class Memo
     @cgi.out { File.read('index.html') }
   end
 
-  def atom?
-    @short == 'atom.xml'
-  end
-
   def dumpdata?
     @short == 'dumpdata'
   end
@@ -127,55 +123,31 @@ class Memo
     }
   end
 
+  def atom?
+    @short == 'atom.xml'
+  end
+
   def atom
-    data = {}
-    title = {}
-    date = {}
+    @data = {}
+    @title = {}
+    @date = {}
     @dbm.each { |key,value|
       if key =~ /^#{@host}\/(.*)/ then
-        data[$1] = value
-        title[$1] = @titledbm[key]
+        @data[$1] = value
+        @title[$1] = @titledbm[key]
         s = @datedbm[key].to_s
         s = '2008-07-08T00:08:19+00:00' if s == ''
-        date[$1] = s
+        @date[$1] = s
       end
     }
-    header = <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<feed xml:lang="en-US" xmlns="http://www.w3.org/2005/Atom">
-  <title>#{@host}.3memo.com</title>
-  <id>tag:3memo.com:Statuses</id>
-  <link href="http://#{@host}.3memo.com/" type="text/html" rel="alternate"/>
-  <author><name>3memo.com</name></author>
-  <subtitle>3memo updates for #{@host}</subtitle>
-  <updated>#{Time.now.strftime("%Y-%m-%dT%H:%M:%S+00:00")}</updated>
-EOF
-  footer = <<EOF
-</feed>
-EOF
-#    entries = data.keys.sort.collect { |key|
-    entries = data.keys.sort { |a,b|
+    @entries = @data.keys.sort { |a,b|
       a.gsub(/\d+/){ |s| s.rjust(10,"0") } <=>
       b.gsub(/\d+/){ |s| s.rjust(10,"0") }
-    }.collect { |key|
-
-      d = data[key].gsub(/</,'&lt;')
-      t = title[key].to_s
-      t = d if t == ''
-      s = (d =~ /^http/ ? "<a href='#{d}'>#{t}</a>" : d)
-      dt = date[key]
-    <<EOF
-    <entry>
-      <title>#{@host}.3memo.com/#{key}</title>
-      <content type="html">#{t.gsub(/&/,'')}</content>
-      <id>tag:3memo.com,#{dt}:http://#{@host}.3memo.com/#{key}</id>
-      <published>#{dt}</published>
-      <updated>#{dt}</updated>
-      <link rel="alternate" href="http://#{@host}.3memo.com/#{key}" type="text/html"/>
-    </entry>
-EOF
-    }.join
-    @cgi.out("type" => 'application/atom+xml'){ header + entries + footer }
+    }
+    File.open("/tmp/lll","w"){ |f|
+      f.print erb :atom
+    }
+    @cgi.out("type" => 'application/atom+xml'){ erb :atom }
   end
 
   def dict?
@@ -288,8 +260,8 @@ if memo.iphone? then
   memo.iphone
 elsif memo.opensearch? then
   memo.opensearch
-#elsif memo.atom? then
-#  memo.atom
+elsif memo.atom? then
+  memo.atom
 elsif memo.dict? then
   memo.dict
 elsif memo.dumpdata? then

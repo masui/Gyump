@@ -17,5 +17,6 @@ Options +FollowSymLinks
 RewriteEngine on
 RewriteRule ^.*iphone\.html$ /memo.cgi?short=iphone.html [L]
 RewriteRule ^dict\.js$ /memo.cgi?short=dict.js [L]
+RewriteRule ^atom\.xml$ /memo.cgi?short=atom.xml [L]
 RewriteRule ^([^\.]*)$ /memo.cgi?short=$1 [L]
 
