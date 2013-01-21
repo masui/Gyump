@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 
+require 'rubygems'
 require 'cgi'
 require 'sdbm'
 require 'erb'
@@ -51,6 +52,8 @@ class Memo
     @dbm = SDBM.open('db/db',0666)
     @titledbm = SDBM.open('db/titledb',0666)
     @datedbm = SDBM.open('db/datedb',0666)
+    @commentdbm = SDBM.open('db/commentdb',0666)
+    @tagsdbm = SDBM.open('db/tagsdb',0666)
     @cgi = CGI.new('html3')
     @hostname = `hostname`.chomp
     #ENV['HTTP_HOST'] =~ /^(.*)memo.#{@hostname}$/
@@ -59,6 +62,8 @@ class Memo
     @short = @cgi['short'].to_s
     @long = @cgi['long'].to_s
     @title = @cgi['title'].to_s
+    @tags = @cgi['tags'].to_s
+    @comment = @cgi['comment'].to_s
 
     (@host,@short) = convert(@host,@short)
     @root = "#{@host}.#{@hostname}"
@@ -144,9 +149,6 @@ class Memo
       a.gsub(/\d+/){ |s| s.rjust(10,"0") } <=>
       b.gsub(/\d+/){ |s| s.rjust(10,"0") }
     }
-    File.open("/tmp/lll","w"){ |f|
-      f.print erb :atom
-    }
     @cgi.out("type" => 'application/atom+xml'){ erb :atom }
   end
 
@@ -193,10 +195,12 @@ class Memo
   def getdata
     @data = {}
     @titles = {}
+    @comments = {}
     @dbm.each { |key,value|
       if key =~ /^#{@host}\/(.*)/ then
         @data[$1] = value
         @titles[$1] = @titledbm[key]
+        @comments[$1] = @commentdbm[key].to_s
       end
     }
   end
@@ -218,6 +222,8 @@ class Memo
     title = @title if title == ''
     @title = title
     @long = long
+    @comment = @commentdbm[@ind].to_s
+    @tags = @tagsdbm[@ind].to_s
     @cgi.out {
       erb :edit
     }
@@ -232,6 +238,38 @@ class Memo
     @dbm[@ind] = (@long.length > 0 ? @long : nil)
     @titledbm[@ind] = @title
     @datedbm[@ind] = Time.now.strftime("%Y-%m-%dT%H:%M:%S+00:00")
+    @commentdbm[@ind] = @comment
+    @tagsdbm[@ind] = @tags
+
+    if @tags != '' then # || @comment != '' then
+      require 'atomutil'
+
+      post_uri = 'http://b.hatena.ne.jp/atom/post'
+      user = 'masui'
+      pass = 'pobox652'
+
+      tags = "[" + @tags.split(/\s+/).join("][") + "]"
+
+      entry = Atom::Entry.new({
+                                :title => 'TITLE TITLE',
+                                :link => Atom::Content.new{ |c|
+                                  c.set_attr(:rel, 'related')
+                                  c.set_attr(:type, 'text/html')
+                                  c.set_attr(:href, @long)
+                                },
+                                :summary => Atom::Content.new { |c|
+                                  c.body = "#{tags} #{@comment}"
+                                  c.set_attr(:type, "text/plain")
+                                },
+                              })
+
+      auth = Atompub::Auth::Wsse.new :username => user, :password => pass
+      client = Atompub::Client.new :auth => auth
+
+      res = client.create_entry(post_uri, entry)
+    end
+
+
     self.list
   end
 

@@ -3,22 +3,37 @@
   <div class="control-group">
     <label class="control-label" for="short">Keyword:</label>
     <div class="controls">
-      <input type="text" name="short" placeholder = "Short keyword (e.g. gog)" class="input-normal" value='<%= @id %>'>
+      <input type="text" name="short" placeholder = "e.g. gog" class="input-normal" value='<%= @id %>'>
     </div>
   </div>
   <% end %>
   <div class="control-group">
     <label class="control-label">URL / Memo:</label>
     <div class="controls">
-      <input type="text" name="long" placeholder="URL or string (e.g. http://Google.com/)" value='<%= @value %>' class="input-xxlarge">
+      <input type="text" name="long" placeholder="e.g. http://Google.com/" value='<%= @value %>' class="input-xxlarge">
     </div>
   </div>
   <div class="control-group">
     <label class="control-label">Description:</label>
     <div class="controls">
-      <input type="text" name="title" placeholder="Description (e.g. Google search page)" value='<%= @title %>' class="input-xxlarge">
+      <input type="text" name="title" placeholder="e.g. Google search page" value='<%= @title %>' class="input-xxlarge">
     </div>
   </div>
+
+  <div class="control-group">
+    <label class="control-label">Tags:</label>
+    <div class="controls">
+      <input type="text" name="tags" placeholder="e.g. Google, Search" value='<%= @tags %>' class="input-xxlarge">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label">Comment:</label>
+    <div class="controls">
+      <input type="text" name="comment" placeholder="e.g. Useful for everything" value='<%= @comment %>' class="input-xxlarge">
+    </div>
+  </div>
+
+
   <div class="control-group">
     <div class="controls">
       <button type="submit" class="btn btn-primary">Register</button>

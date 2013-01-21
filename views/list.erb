@@ -30,10 +30,12 @@
              t = @titles[key].to_s
              t = d if t == ''
              s = (d =~ /^(http|javascript)/ ? "<a href='#{d}'>#{t}</a>" : "<a href='http://#{@root}/#{key}'>#{t}</a>")
+	     comment = @comments[key]
+	     c = (comment ? "<br>#{comment}" : "")
         %>
            <tr>
 	     <td class="span2"><a href='http://<%= @root %>/<%= key %>?' class="keyword"><%= key %></a></td>
-	     <td><%= s %></td>
+	     <td><%= s %><%= c %></td>
 	   </tr>
         <% }  %>
       </table>
