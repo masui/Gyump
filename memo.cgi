@@ -113,7 +113,9 @@ class Memo
     @cgi.out {
       data = {}
       title = {}
-      @dbm.each { |key,value|
+      # @dbm.each { |key,value|
+      @dbm.keys.each { |key|
+        value = @dbm[key]
         if key =~ /^#{@host}\/(.*)/ then
           data[$1] = value
           title[$1] = @titledbm[key]
@@ -136,7 +138,9 @@ class Memo
     @data = {}
     @title = {}
     @date = {}
-    @dbm.each { |key,value|
+    # @dbm.each { |key,value|
+    @dbm.keys.each { |key|
+      value = @dbm[key]
       if key =~ /^#{@host}\/(.*)/ then
         @data[$1] = value
         @title[$1] = @titledbm[key]
@@ -196,7 +200,9 @@ class Memo
     @data = {}
     @titles = {}
     @comments = {}
-    @dbm.each { |key,value|
+    # @dbm.each { |key,value|
+    @dbm.keys.each { |key|
+      value = @dbm[key]
       if key =~ /^#{@host}\/(.*)/ then
         @data[$1] = value
         @titles[$1] = @titledbm[key]
