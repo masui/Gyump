@@ -2,20 +2,19 @@
 <HTML>
   <HEAD>
     <META content="text/html; charset=utf-8" http-equiv="Content-Type">
-    <LINK href="http://<%= @root %>/atom.xml" type="application/atom+xml" rel="alternate" title="memo (Atom)">
-    <LINK href="/stylesheets/memo.css" type="text/css" rel="stylesheet">
-    <LINK href="/3memo.png" rel="apple-touch-icon">
+    <LINK href="<%= @base %>/atom.xml" type="application/atom+xml" rel="alternate" title="memo (Atom)">
+    <LINK href="<%= @base %>/stylesheets/memo.css" type="text/css" rel="stylesheet">
+    <LINK href="<%= @base %>/3memo.png" rel="apple-touch-icon">
 
-    <link href="stylesheets/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="<%= @base %>/stylesheets/bootstrap.css" rel="stylesheet" media="screen">
 
     <TITLE><%= @root %> Memos</TITLE>
     <!-- script src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script> -->
     <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="javascripts/bootstrap.js"></script>
+    <script src="<%= @base %>/javascripts/bootstrap.js"></script>
   </HEAD>
   <body style="margin:5pt;">
     <h1>Internet Memo</h1>
-
     <hr>
     <h3>List of memos at <i><%= @root %></i></h3>
 

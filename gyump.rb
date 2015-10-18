@@ -1,8 +1,6 @@
 #!/usr/bin/ruby
 # -*- coding: utf-8 -*-
 #
-
-# require 'rubygems'
 require 'cgi'
 require 'sdbm'
 require 'erb'
@@ -59,7 +57,7 @@ class Gyump
     #ENV['HTTP_HOST'] =~ /^(.*)memo.#{@hostname}$/
     ENV['HTTP_HOST'] =~ /^(.*)#{@hostname}$/
     @host = $1.to_s.sub(/\.$/,'')
-
+    
     @cgi = cgi || CGI.new('html3') # テスト / 運用
     @short = @cgi['short'].to_s
     @long = @cgi['long'].to_s
@@ -70,6 +68,7 @@ class Gyump
     log "Before convert: host=#{@host}, short=#{@short}"
     (@host,@short) = convert(@host,@short)
     @root = "#{@host}.#{@hostname}"
+    @base = (['..'] * @host.split(/\./).length).join('/')
 
     log "#{Time.now.strftime('%Y%m%d%H%M%S')} host=#{@host}, short=#{@short}, root=#{@root}"
 
@@ -249,35 +248,6 @@ class Gyump
     @datedbm[@ind] = Time.now.strftime("%Y-%m-%dT%H:%M:%S+00:00")
     @commentdbm[@ind] = @comment
     @tagsdbm[@ind] = @tags
-
-    if @tags != '' then # || @comment != '' then
-      require 'atomutil'
-
-      post_uri = 'http://b.hatena.ne.jp/atom/post'
-      user = 'masui'
-      pass = 'xxxxxx'
-
-      tags = "[" + @tags.split(/\s+/).join("][") + "]"
-
-      entry = Atom::Entry.new({
-                                :title => 'TITLE TITLE',
-                                :link => Atom::Content.new{ |c|
-                                  c.set_attr(:rel, 'related')
-                                  c.set_attr(:type, 'text/html')
-                                  c.set_attr(:href, @long)
-                                },
-                                :summary => Atom::Content.new { |c|
-                                  c.body = "#{tags} #{@comment}"
-                                  c.set_attr(:type, "text/plain")
-                                },
-                              })
-
-      auth = Atompub::Auth::Wsse.new :username => user, :password => pass
-      client = Atompub::Client.new :auth => auth
-
-      res = client.create_entry(post_uri, entry)
-    end
-
     self.list
   end
 
