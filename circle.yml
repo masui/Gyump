@@ -11,4 +11,6 @@ dependencies:
 
 test:
   override:
+    - mkdir db
+    - mkdir log
     - bundle exec ruby gyump.rb
