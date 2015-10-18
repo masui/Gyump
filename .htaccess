@@ -15,8 +15,8 @@ Options +ExecCGI
 AddHandler cgi-script .cgi
 Options +FollowSymLinks
 RewriteEngine on
-RewriteRule ^.*iphone\.html$ /memo.cgi?short=iphone.html [L]
-RewriteRule ^dict\.js$ /memo.cgi?short=dict.js [L]
-RewriteRule ^atom\.xml$ /memo.cgi?short=atom.xml [L]
-RewriteRule ^([^\.]*)$ /memo.cgi?short=$1 [L]
+RewriteRule ^.*iphone\.html$ gyump.cgi?short=iphone.html [L]
+RewriteRule ^dict\.js$ gyump.cgi?short=dict.js [L]
+RewriteRule ^atom\.xml$ gyump.cgi?short=atom.xml [L]
+RewriteRule ^([^\.]*)$ gyump.cgi?short=$1 [L]
 

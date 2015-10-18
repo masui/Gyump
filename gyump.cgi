@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 
-require 'rubygems'
+# require 'rubygems'
 require 'cgi'
 require 'sdbm'
 require 'erb'
