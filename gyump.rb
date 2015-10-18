@@ -10,18 +10,18 @@ require 'erb'
 class Gyump
   # ユーザ指定URL                          整形後URL                             hostname           id      @host      @short
   # -----------------------------------------------------------------------------------------------------------------
-  # http://3memo.com/masui/             => http://masui.3memo.com/               masui              ''      ''         masui/
-  # http://3memo.com/masui              => http://masui.3memo.com/               masui              ''      ''         masui
-  # http://3memo.com/masui/abc          => http://masui.3memo.com/abc            masui              abc     ''         masui/abc
-  # http://3memo.com/masui/abc/def      => http://abc.masui.3memo.com/def        abc.masui          def     ''         masui/abc/def
-  # http://abc.masui.3memo.com/         => http://abc.masui.3memo.com/           abc.masui          ''      abc.masui  ''
-  # http://masui.3memo.com/abc/         => http://abc.masui.3memo.com/           abc.masui          ''      masui      abc/
-  # http://masui.3memo.com/abc          => http://masui.3memo.com/abc            masui              abc     masui      abc
-  # http://masui.3memo.com/abc/def/     => http://def.abc.masui.3memo.com/       def.abc.masui      ''      masui      abc/def/
-  # http://masui.3memo.com/abc/def      => http://abc.masui.3memo.com/def        abc.masui          def     masui      abc/def
-  # http://abc.masui.3memo.com/def      => http://abc.masui.3memo.com/def        abc.masui          def     abc.masui  def
-  # http://abc.masui.3memo.com/def/ghi/ => http://ghi.def.abc.masui.3memo.com/   ghi.def.abc.masui  ''      abc.masui  def/ghi/
-  # http://abc.masui.3memo.com/def/ghi  => http://def.abc.masui.3memo.com/ghi    def.abc.masui      ghi     abc.masui  def/ghi
+  # http://gyump.com/masui/             => http://masui.gyump.com/               masui              ''      ''         masui/
+  # http://gyump.com/masui              => http://masui.gyump.com/               masui              ''      ''         masui
+  # http://gyump.com/masui/abc          => http://masui.gyump.com/abc            masui              abc     ''         masui/abc
+  # http://gyump.com/masui/abc/def      => http://abc.masui.gyump.com/def        abc.masui          def     ''         masui/abc/def
+  # http://abc.masui.gyump.com/         => http://abc.masui.gyump.com/           abc.masui          ''      abc.masui  ''
+  # http://masui.gyump.com/abc/         => http://abc.masui.gyump.com/           abc.masui          ''      masui      abc/
+  # http://masui.gyump.com/abc          => http://masui.gyump.com/abc            masui              abc     masui      abc
+  # http://masui.gyump.com/abc/def/     => http://def.abc.masui.gyump.com/       def.abc.masui      ''      masui      abc/def/
+  # http://masui.gyump.com/abc/def      => http://abc.masui.gyump.com/def        abc.masui          def     masui      abc/def
+  # http://abc.masui.gyump.com/def      => http://abc.masui.gyump.com/def        abc.masui          def     abc.masui  def
+  # http://abc.masui.gyump.com/def/ghi/ => http://ghi.def.abc.masui.gyump.com/   ghi.def.abc.masui  ''      abc.masui  def/ghi/
+  # http://abc.masui.gyump.com/def/ghi  => http://def.abc.masui.gyump.com/ghi    def.abc.masui      ghi     abc.masui  def/ghi
 
   def log(s)
     File.open("log/log","a"){ |f|
@@ -54,12 +54,13 @@ class Gyump
     @datedbm = SDBM.open('db/datedb',0666)
     @commentdbm = SDBM.open('db/commentdb',0666)
     @tagsdbm = SDBM.open('db/tagsdb',0666)
+    
     @hostname = `hostname`.chomp
     #ENV['HTTP_HOST'] =~ /^(.*)memo.#{@hostname}$/
     ENV['HTTP_HOST'] =~ /^(.*)#{@hostname}$/
     @host = $1.to_s.sub(/\.$/,'')
 
-    @cgi = cgi || CGI.new('html3')
+    @cgi = cgi || CGI.new('html3') # テスト / 運用
     @short = @cgi['short'].to_s
     @long = @cgi['long'].to_s
     @title = @cgi['title'].to_s
@@ -254,7 +255,7 @@ class Gyump
 
       post_uri = 'http://b.hatena.ne.jp/atom/post'
       user = 'masui'
-      pass = 'pobox652'
+      pass = 'xxxxxx'
 
       tags = "[" + @tags.split(/\s+/).join("][") + "]"
 
@@ -276,7 +277,6 @@ class Gyump
 
       res = client.create_entry(post_uri, entry)
     end
-
 
     self.list
   end
