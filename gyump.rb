@@ -7,7 +7,7 @@ require 'cgi'
 require 'sdbm'
 require 'erb'
 
-class Memo
+class Gyump
   # ユーザ指定URL                          整形後URL                             hostname           id      @host      @short
   # -----------------------------------------------------------------------------------------------------------------
   # http://3memo.com/masui/             => http://masui.3memo.com/               masui              ''      ''         masui/
@@ -48,27 +48,29 @@ class Memo
     ERB.new(File.read("views/#{template.to_s}.erb")).result(binding)
   end
 
-  def initialize
+  def initialize(cgi=nil)
     @dbm = SDBM.open('db/db',0666)
     @titledbm = SDBM.open('db/titledb',0666)
     @datedbm = SDBM.open('db/datedb',0666)
     @commentdbm = SDBM.open('db/commentdb',0666)
     @tagsdbm = SDBM.open('db/tagsdb',0666)
-    @cgi = CGI.new('html3')
     @hostname = `hostname`.chomp
     #ENV['HTTP_HOST'] =~ /^(.*)memo.#{@hostname}$/
     ENV['HTTP_HOST'] =~ /^(.*)#{@hostname}$/
     @host = $1.to_s.sub(/\.$/,'')
+
+    @cgi = cgi || CGI.new('html3')
     @short = @cgi['short'].to_s
     @long = @cgi['long'].to_s
     @title = @cgi['title'].to_s
     @tags = @cgi['tags'].to_s
     @comment = @cgi['comment'].to_s
 
+    log "Before convert: host=#{@host}, short=#{@short}"
     (@host,@short) = convert(@host,@short)
     @root = "#{@host}.#{@hostname}"
 
-    log "#{Time.now.strftime('%Y%m%d%H%M%S')} #{@host} #{@short}"
+    log "#{Time.now.strftime('%Y%m%d%H%M%S')} host=#{@host}, short=#{@short}, root=#{@root}"
 
     @short2 = @short.sub(/!$/,'')
     @ind = "#{@host}/#{@short2}"
@@ -320,6 +322,21 @@ class Memo
       register
     else
       show
+    end
+  end
+end
+
+if __FILE__ == $0 then
+  require 'minitest/autorun'
+
+  class TestGyump < MiniTest::Test
+    def setup
+    end
+
+    def test_convert
+      gyump = Gyump.new({})
+      assert_equal  gyump.convert('cat.masui','abc'), ['cat.masui', 'abc']
+      assert_equal  gyump.convert('cat.masui','abc/def'), ['abc.cat.masui', 'def']
     end
   end
 end

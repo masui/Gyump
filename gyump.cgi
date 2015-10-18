@@ -3,6 +3,6 @@
 #
 require './gyump'
 
-memo = Memo.new
-memo.run
+gyump = Gyump.new
+gyump.run
 

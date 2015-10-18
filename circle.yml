@@ -1,0 +1,15 @@
+#
+# GitHubにpushすると自動的にCircleCIが動くように設定
+#
+
+machine:
+  ruby:
+    version: 2.0.0
+
+dependencies:
+  override:
+    - bundle install
+
+test:
+  override:
+    - bundle exec ruby gyump.rb
