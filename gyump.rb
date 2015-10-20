@@ -1,4 +1,5 @@
 #!/usr/bin/ruby
+# coding: utf-8
 # -*- coding: utf-8 -*-
 #
 require 'cgi'
@@ -21,6 +22,29 @@ class Gyump
   # http://abc.masui.gyump.com/def/ghi/ => http://ghi.def.abc.masui.gyump.com/   ghi.def.abc.masui  ''      abc.masui  def/ghi/
   # http://abc.masui.gyump.com/def/ghi  => http://def.abc.masui.gyump.com/ghi    def.abc.masui      ghi     abc.masui  def/ghi
 
+  # URLから取得される @host, @short から name, id を計算する
+  #
+  # ユーザ指定URL                          整形後URL                             name               id      @host      @short
+  # -----------------------------------------------------------------------------------------------------------------
+  # http://gyump.com/masui/             => http://masui.gyump.com/               masui              ''      ''         masui/
+  # http://gyump.com/masui              => http://masui.gyump.com/               masui              ''      ''         masui           # case1
+  # http://gyump.com/masui/abc          => http://masui.gyump.com/abc            masui              abc     ''         masui/abc
+  # http://gyump.com/masui/abc/def      => http://abc.masui.gyump.com/def        abc.masui          def     ''         masui/abc/def
+  # http://abc.masui.gyump.com/         => http://abc.masui.gyump.com/           abc.masui          ''      abc.masui  ''
+  # http://masui.gyump.com/abc/         => http://abc.masui.gyump.com/           abc.masui          ''      masui      abc/
+  # http://masui.gyump.com/abc          => http://masui.gyump.com/abc            masui              abc     masui      abc
+  # http://masui.gyump.com/abc/def/     => http://def.abc.masui.gyump.com/       def.abc.masui      ''      masui      abc/def/
+  # http://masui.gyump.com/abc/def      => http://abc.masui.gyump.com/def        abc.masui          def     masui      abc/def
+  # http://abc.masui.gyump.com/def      => http://abc.masui.gyump.com/def        abc.masui          def     abc.masui  def
+  # http://abc.masui.gyump.com/def/ghi/ => http://ghi.def.abc.masui.gyump.com/   ghi.def.abc.masui  ''      abc.masui  def/ghi/
+  # http://abc.masui.gyump.com/def/ghi  => http://def.abc.masui.gyump.com/ghi    def.abc.masui      ghi     abc.masui  def/ghi
+
+  # サブドメイン表記ができない場合
+  # http://localhost/~masui/Gyump/masui/                                         masui              ''      ''         masui/
+  # http://localhost/~masui/Gyump/masui/abc                                      masui              abc     ''         masui/abc
+  # http://localhost/~masui/Gyump/masui/abc/def                                  abc.masui          def     ''         masui/abc/def
+  # http://localhost/~masui/Gyump/masui/abc/def/                                 def.abc.masui      ''      ''         masui/abc/def/
+
   def log(s)
     File.open("log/log","a"){ |f|
       f.puts s
@@ -28,9 +52,11 @@ class Gyump
   end
 
   def convert(host,short)
-    if host == '' && short !~ /\// then
+    log "convert(#{host},#{short})"
+    if host == '' && short !~ /\// then # case1
       short += '/'
     end
+    log "convert...(#{host},#{short})"
     if short =~ /^(.*)\/$/ then
       a1 = $1.split(/\//).reverse
       id = ''
@@ -39,6 +65,7 @@ class Gyump
       id = a1.shift.to_s
     end
     a2 = host.split(/\./)
+    log "convert_ret(#{(a1 + a2).join('.')},#{id})"
     return [(a1 + a2).join('.'),id]
   end
 
@@ -47,30 +74,54 @@ class Gyump
   end
 
   def initialize(cgi=nil)
+    log "initialize"
+    
     @dbm = SDBM.open('db/db',0666)
     @titledbm = SDBM.open('db/titledb',0666)
     @datedbm = SDBM.open('db/datedb',0666)
     @commentdbm = SDBM.open('db/commentdb',0666)
     @tagsdbm = SDBM.open('db/tagsdb',0666)
-    
-    @hostname = `hostname`.chomp
-    #ENV['HTTP_HOST'] =~ /^(.*)memo.#{@hostname}$/
-    ENV['HTTP_HOST'] =~ /^(.*)#{@hostname}$/
-    @host = $1.to_s.sub(/\.$/,'')
+
+    File.open("/tmp/log","w"){ |f|
+      ENV.each { |key,val|
+        f.puts "ENV[#{key}] = #{val}"
+      }
+    }
     
     @cgi = cgi || CGI.new('html3') # テスト / 運用
+    
+    @hostname = `hostname`.chomp
+    log "@hostname = #{@hostname}"
+    #ENV['HTTP_HOST'] =~ /^(.*)memo.#{@hostname}$/
+    ENV['HTTP_HOST'] =~ /^(.*)#{@hostname}$/
+    @host = @cgi['host'].to_s
+    @host = $1.to_s.sub(/\.$/,'') if @host == ''
+    log "http_host = #{ENV['HTTP_HOST']} @host=#{@host}"
+    
     @short = @cgi['short'].to_s
     @long = @cgi['long'].to_s
     @title = @cgi['title'].to_s
     @tags = @cgi['tags'].to_s
     @comment = @cgi['comment'].to_s
 
-    log "Before convert: host=#{@host}, short=#{@short}"
+    log "Before convert: hostname=#{@hostname}, host=#{@host}, long=#{@long}, short=#{@short}, title=#{@title}, tags=#{@tags}, comment=#{@comment}"
     (@host,@short) = convert(@host,@short)
     @root = "#{@host}.#{@hostname}"
     @base = (['..'] * @host.split(/\./).length).join('/')
+    log "base = #{@base}"
 
-    log "#{Time.now.strftime('%Y%m%d%H%M%S')} host=#{@host}, short=#{@short}, root=#{@root}"
+    log "#{Time.now.strftime('%Y%m%d%H%M%S')} root=#{@root}"
+    log "After convert: hostname=#{@hostname}, host=#{@host}, long=#{@long}, short=#{@short}, title=#{@title}, tags=#{@tags}, comment=#{@comment}"
+
+    # After convert: hostname=masui.org, host=memo, long=, short=s, title=, tags=, comment=
+
+    # http://memo.masui.org/s の場合
+    # Before convert: hostname=masui.org, host=memo, long=, short=s, title=, tags=, comment=
+    # After convert: hostname=masui.org, host=memo, long=, short=s, title=, tags=, comment=
+                                                                  
+    # http://localhost/~masui/Gyump/xxx/
+    # Before convert: hostname=ToshiyukinoMBP, host=, long=, short=xxx/3, title=, tags=, comment=
+    # After convert: hostname=ToshiyukinoMBP, host=xxx, long=, short=3, title=, tags=, comment=
 
     @short2 = @short.sub(/!$/,'')
     @ind = "#{@host}/#{@short2}"
@@ -202,7 +253,7 @@ class Gyump
     @data = {}
     @titles = {}
     @comments = {}
-    # @dbm.each { |key,value|
+    # @dbm.each { |key,value| バグでこれが動かない?
     @dbm.keys.each { |key|
       value = @dbm[key]
       if key =~ /^#{@host}\/(.*)/ then
@@ -215,13 +266,17 @@ class Gyump
 
   def list
     getdata
+    log "list: base=#{@base}"
     @cgi.out { erb :list }
   end
 
   def edit?
+    log "@long = #{@long}"
+    log "@short = #{@short}"
     @long == '' && (@short =~ /!$/ || @dbm[@ind].to_s == '') ||
-      @long != '' && @short == '' ||
-      @register == '' && @long == '' && ENV['HTTP_REFERER'].to_s.index(@root) # Don't jump if accessed from the memo site.
+      # @long != '' && @short == '' ||
+      # @register == '' && @long == '' && ENV['HTTP_REFERER'].to_s.index(@root) # Don't jump if accessed from the memo site.
+      @register == '' && @long == '' && ENV['HTTP_REFERER'].to_s.index(ENV['HTTP_HOST']) # Don't jump if accessed from the memo site.
   end
 
   def edit
@@ -242,12 +297,14 @@ class Gyump
   end
 
   def register
-    log "long = #{@long}, title = #{@title}"
+    log "register: long = #{@long}, short=#{@short}, title = #{@title}"
     @dbm[@ind] = (@long.length > 0 ? @long : nil)
     @titledbm[@ind] = @title
     @datedbm[@ind] = Time.now.strftime("%Y-%m-%dT%H:%M:%S+00:00")
     @commentdbm[@ind] = @comment
     @tagsdbm[@ind] = @tags
+    
+    # @base = "."
     self.list
   end
 
@@ -270,6 +327,7 @@ class Gyump
   end
 
   def run
+    log "run: short=#{@short}"
     if iphone? then
       iphone
     elsif opensearch? then
@@ -287,6 +345,7 @@ class Gyump
     elsif list? then
       list
     elsif edit? then
+      log "edit = #{edit?}"
       edit
     elsif register? then
       register

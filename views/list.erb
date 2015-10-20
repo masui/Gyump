@@ -5,61 +5,71 @@
     <LINK href="<%= @base %>/atom.xml" type="application/atom+xml" rel="alternate" title="memo (Atom)">
     <LINK href="<%= @base %>/stylesheets/memo.css" type="text/css" rel="stylesheet">
     <LINK href="<%= @base %>/3memo.png" rel="apple-touch-icon">
-
+    
     <link href="<%= @base %>/stylesheets/bootstrap.css" rel="stylesheet" media="screen">
-
-    <TITLE><%= @root %> Memos</TITLE>
+    
+    <TITLE><%= @root %> bookmarks</TITLE>
     <!-- script src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js'></script> -->
     <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="<%= @base %>/javascripts/bootstrap.js"></script>
+    <!-- script src="<%= @base %>/javascripts/bootstrap.js"></script> -->
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
   </HEAD>
   <body style="margin:5pt;">
-    <h1>Internet Memo</h1>
-    <hr>
-    <h3>List of memos at <i><%= @root %></i></h3>
-
+    <!--
+	<h1>Internet Bookmarks</h1>
+	<hr>
+	-->
+    <h3>List of bookmarks @ <i><%= @root %></i></h3>
+    
     <div class="container">
       <div class="span11">
-      <table class="table table-striped table-hover table-bordered table-condensed">
-	<%
-	   @data.keys.sort { |a,b|
+	<table class="table table-striped table-hover table-bordered table-condensed">
+	  <%
+	     @data.keys.sort { |a,b|
              a.gsub(/\d+/){ |s| s.rjust(10,"0") } <=> b.gsub(/\d+/){ |s| s.rjust(10,"0") }
-	   }.collect { |key|
+	     }.collect { |key|
              d = @data[key].gsub(/</,'&lt;')
-             t = @titles[key].to_s
-             t = d if t == ''
-             s = (d =~ /^(http|javascript)/ ? "<a href='#{d}'>#{t}</a>" : "<a href='http://#{@root}/#{key}'>#{t}</a>")
-	     comment = @comments[key]
-	     c = (comment ? "<br>#{comment}" : "")
-        %>
-           <tr>
-	     <td class="span2"><a href='http://<%= @root %>/<%= key %>?' class="keyword"><%= key %></a></td>
-	     <td><%= s %><%= c %></td>
-	   </tr>
-        <% }  %>
-      </table>
-      </div>
-    </div>
+				     t = @titles[key].to_s
+				     t = d if t == ''
+				     s = (d =~ /^(http|javascript)/ ? "<a href='#{d}'>#{t}</a>" : "<a href='http://#{@root}/#{key}'>#{t}</a>")
+				     comment = @comments[key]
+				     c = (comment ? "<br>#{comment}" : "")
+				     %>
+             <tr>
+	       <!-- <td class="span2"><a href='http://<%= @base %>/<%= key %>!' class="keyword"><%= key %></a></td> -->
+	       <!-- <td class="span2"><a href='<%= "#{@base}/#{key}" %>!' class="keyword"><%= key %></a></td> -->
+	       <!-- <td class="span2"><a href='<%= @base %>/<%= key %>' class="keyword"><%= key %></a></td> -->
+	       <td class="span2"><a href='<%= key %>' class="keyword"><%= key %></a></td>
+	       <td><%= s %><%= c %></td>
+	     </tr>
+             <% }  %>
+        </table>
+     </div>
+  </div>
+<hr>
+
+<!-- <h3>Goodies</h3> -->
+
+  <ul>
+    <li><a class="btn btn-info btn-small" href='' onClick='addp("<%= @root %>/opensearch");'>Install search plugin</a> for Firefox/IE
+    <li>Use the bookmarklet
+      <a class="btn btn-info btn-small" href="javascript:(function(){w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/gyump.cgi?long='+escape(url)+'&title='+encodeURIComponent(dt);})()">Register to <%= @root %></a>
+	for quick bookmark registration.
+      <!--
+	  <li>Use this bookmarklet
+	    [ <a class="btn btn-info btn-small" href="javascript:(function(){d=new%20Date;w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/gyump.cgi?register=1&long='+escape(url)+'&title='+encodeURIComponent(dt)+'&short='+d.getFullYear()+('00'+(d.getMonth()+1)).slice(-2)+('00'+d.getDate()).slice(-2)+('00'+d.getHours()).slice(-2)+('00'+d.getMinutes()).slice(-2)+('00'+d.getSeconds()).slice(-2);})()">QUICK Registration to <%= @root %></a> ]
+	    -->
+      <!--
+	  <li>
+	    <a class="btn btn-info btn-small" href="javascript:(function(){s=%22javascript:(function(){w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/memo.cgi?long='+escape(url)+'&title='+encodeURIComponent(dt);})()%22;t='REGISTER';if(window.sidebar){alert(s);window.sidebar.addPanel(t,s,'')}else{window.external.AddFavorite(s,t);}})()">Create bookmarklet</a>
+	    -->
+      <!--
+	  <li>Use <a class="btn btn-info btn-small" href="http://<%= @base %>/iphone.html">this page</a> for quick access from iPhone
+	    -->
+  </ul>
 
   <hr>
-  <h3>Goodies</h3>
-
-    <ul>
-      <li><a class="btn btn-info btn-small" href='' onClick='addp("http://<%= @root %>/opensearch");'>Install search plugin</a> for Firefox/IE
-      <li>Use the bookmarklet
-      [ <a class="btn btn-info btn-small" href="javascript:(function(){w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/memo.cgi?long='+escape(url)+'&title='+encodeURIComponent(dt);})()">Register to <%= @root %></a> ]
-      for quick memo registration.
-      <li>Use this bookmarklet
-[ <a class="btn btn-info btn-small" href="javascript:(function(){d=new%20Date;w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/memo.cgi?register=1&long='+escape(url)+'&title='+encodeURIComponent(dt)+'&short='+d.getFullYear()+('00'+(d.getMonth()+1)).slice(-2)+('00'+d.getDate()).slice(-2)+('00'+d.getHours()).slice(-2)+('00'+d.getMinutes()).slice(-2)+('00'+d.getSeconds()).slice(-2);})()">QUICK Registration to <%= @root %></a> ]
-      <!--
-      <li>
-      <a class="btn btn-info btn-small" href="javascript:(function(){s=%22javascript:(function(){w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/memo.cgi?long='+escape(url)+'&title='+encodeURIComponent(dt);})()%22;t='REGISTER';if(window.sidebar){alert(s);window.sidebar.addPanel(t,s,'')}else{window.external.AddFavorite(s,t);}})()">Create bookmarklet</a>
-      -->
-      <li>Use <a class="btn btn-info btn-small" href="http://<%= @base %>/iphone.html">this page</a> for quick access from iPhone
-    </ul>
-
-    <hr>
-    <h3>Create a new memo</h3>
+  <h3>Create a new memo</h3>
 
     <div class="container">
       <div class="span5">
