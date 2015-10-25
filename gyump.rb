@@ -122,7 +122,9 @@ class Gyump
     @http_host = ENV['HTTP_HOST']  # 'localhost', 'gyump.com', 'memo.masui.org'
     a = ("."+@http_host).split('.')
     @hostname = a[-2..-1].to_a.join('.').sub(/^\./,'')
-    @subdomain = a[0..-3].to_a.join('.').sub(/^\./,'')
+
+    @subdomain = @cgi['host'].to_s
+    @subdomain = a[0..-3].to_a.join('.').sub(/^\./,'')  unless @subdomain
 
     log "Before convert: hostname=#{@hostname}, host=#{@host}, long=#{@long}, short=#{@short}, title=#{@title}, tags=#{@tags}, comment=#{@comment}"
     # (@host,@short) = convert(@host,@short)
