@@ -22,6 +22,5 @@ RewriteEngine on
 
 RewriteCond %{REQUEST_URI} !(gyump\.cgi)
 RewriteCond %{REQUEST_URI} !(stylesheets)
-RewriteRule ^(.*)$ gyump.cgi?short=$1 [L]
-
+RewriteRule ^(.*)$ /gyump.cgi?short=$1 [L]
 

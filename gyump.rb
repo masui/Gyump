@@ -105,24 +105,31 @@ class Gyump
     
     @cgi = cgi || CGI.new('html3') # テスト / 運用
     
-    @hostname = `hostname`.chomp
-    log "@hostname = #{@hostname}"
-    #ENV['HTTP_HOST'] =~ /^(.*)memo.#{@hostname}$/
-    ENV['HTTP_HOST'] =~ /^(.*)#{@hostname}$/
-    @host = @cgi['host'].to_s
-    @host = $1.to_s.sub(/\.$/,'') if @host == ''
-    log "http_host = #{ENV['HTTP_HOST']} @host=#{@host}"
-    
+    # @hostname = `hostname`.chomp
+    # log "@hostname = #{@hostname}"
+    # #ENV['HTTP_HOST'] =~ /^(.*)memo.#{@hostname}$/
+    # ENV['HTTP_HOST'] =~ /^(.*)#{@hostname}$/
+    # @host = @cgi['host'].to_s
+    # @host = $1.to_s.sub(/\.$/,'') if @host == ''
+    # log "http_host = #{ENV['HTTP_HOST']} @host=#{@host}"
+
     @short = @cgi['short'].to_s
     @long = @cgi['long'].to_s
     @title = @cgi['title'].to_s
     @tags = @cgi['tags'].to_s
     @comment = @cgi['comment'].to_s
 
-    log "Before convert: hostname=#{@hostname}, host=#{@host}, long=#{@long}, short=#{@short}, title=#{@title}, tags=#{@tags}, comment=#{@comment}"
-    (@host,@short) = convert(@host,@short)
+    @http_host = ENV['HTTP_HOST']  # 'localhost', 'gyump.com', 'memo.masui.org'
+    a = ("."+@http_host).split('.')
+    @hostname = a[-2..-1].to_a.join('.').sub(/^\./,'')
+    @subdomain = a[0..-3].to_a.join('.').sub(/^\./,'')
 
-    @hostname = ENV['HTTP_HOST']
+    log "Before convert: hostname=#{@hostname}, host=#{@host}, long=#{@long}, short=#{@short}, title=#{@title}, tags=#{@tags}, comment=#{@comment}"
+    # (@host,@short) = convert(@host,@short)
+    (@host,@short) = convert(@subdomain,@short)
+
+    #@hostname = ENV['HTTP_HOST']
+    #@root = "#{@host}.#{@hostname}"
     @root = "#{@host}.#{@hostname}"
     @base = (['..'] * @host.split(/\./).length).join('/')
     log "base = #{@base}"
