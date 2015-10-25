@@ -49,9 +49,12 @@ class Gyump
     @hostname = `hostname`.chomp
     @envhost = ENV['HTTP_HOST']
     @arghost = @cgi['host'].to_s
-    @cgiargs = @cgi.keys.map { |key|
-      "cgi[#{key}] = #{@cgi[key]}"
-    }.join("<br>")
+    @short = @cgi['short'].to_s
+    @aa = @cgi['aa'].to_s
+    @cgistr = @cgi.to_s
+    #@cgiargs = @cgi.keys.map { |key|
+    #  "cgi[#{key}] = #{@cgi[key]}"
+    #}.join("<br>")
     @cgi.out {
       erb :test
     }
