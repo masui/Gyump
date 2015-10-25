@@ -20,6 +20,9 @@
 	<hr>
 	-->
     <h3>List of bookmarks @ <i><%= @root %></i></h3>
+
+    <%= @root %><br>
+    <%= @base %>
     
     <div class="container">
       <div class="span11">
@@ -51,7 +54,7 @@
 <!-- <h3>Goodies</h3> -->
 
   <ul>
-    <li><a class="btn btn-info btn-small" href='' onClick='addp("<%= @root %>/opensearch");'>Install search plugin</a> for Firefox/IE
+    <li><a class="btn btn-info btn-small" href='' onClick='addp("http://<%= @root %>/opensearch");'>Install search plugin</a> for Firefox/IE
     <li>Use the bookmarklet
       <a class="btn btn-info btn-small" href="javascript:(function(){w=window.open();dt=window.getSelection();if(dt=='')dt=document.title;url=document.location.href;w.location.href='http://<%= @root %>/gyump.cgi?long='+escape(url)+'&title='+encodeURIComponent(dt);})()">Register to <%= @root %></a>
 	for quick bookmark registration.
