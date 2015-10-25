@@ -121,6 +121,8 @@ class Gyump
 
     log "Before convert: hostname=#{@hostname}, host=#{@host}, long=#{@long}, short=#{@short}, title=#{@title}, tags=#{@tags}, comment=#{@comment}"
     (@host,@short) = convert(@host,@short)
+
+    @hostname = ENV['HTTP_HOST']
     @root = "#{@host}.#{@hostname}"
     @base = (['..'] * @host.split(/\./).length).join('/')
     log "base = #{@base}"

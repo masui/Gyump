@@ -4,7 +4,6 @@
 require './gyump'
 
 gyump = Gyump.new
-gyump.test
+# gyump.test
 
-# gyump.run
-
+gyump.run
