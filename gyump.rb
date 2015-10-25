@@ -45,6 +45,18 @@ class Gyump
   # http://localhost/~masui/Gyump/masui/abc/def                                  abc.masui          def     ''         masui/abc/def
   # http://localhost/~masui/Gyump/masui/abc/def/                                 def.abc.masui      ''      ''         masui/abc/def/
 
+  def test
+    @hostname = `hostname`.chomp
+    @envhost = ENV['HTTP_HOST']
+    @arghost = @cgi['host'].to_s
+    @cgiargs = @cgi.keys.map { |key|
+      "cgi[#{key}] = #{@cgi[key]}"
+    }.join("<br>")
+    @cgi.out {
+      erb :test
+    }
+  end
+
   def log(s)
     File.open("log/log","a"){ |f|
       f.puts s
