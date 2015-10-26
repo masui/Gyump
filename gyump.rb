@@ -7,120 +7,50 @@ require 'sdbm'
 require 'erb'
 
 class Gyump
-  # ユーザ指定URL                          整形後URL                             hostname           id      @host      @short
-  # -----------------------------------------------------------------------------------------------------------------
-  # http://gyump.com/masui/             => http://masui.gyump.com/               masui              ''      ''         masui/
-  # http://gyump.com/masui              => http://masui.gyump.com/               masui              ''      ''         masui
-  # http://gyump.com/masui/abc          => http://masui.gyump.com/abc            masui              abc     ''         masui/abc
-  # http://gyump.com/masui/abc/def      => http://abc.masui.gyump.com/def        abc.masui          def     ''         masui/abc/def
-  # http://abc.masui.gyump.com/         => http://abc.masui.gyump.com/           abc.masui          ''      abc.masui  ''
-  # http://masui.gyump.com/abc/         => http://abc.masui.gyump.com/           abc.masui          ''      masui      abc/
-  # http://masui.gyump.com/abc          => http://masui.gyump.com/abc            masui              abc     masui      abc
-  # http://masui.gyump.com/abc/def/     => http://def.abc.masui.gyump.com/       def.abc.masui      ''      masui      abc/def/
-  # http://masui.gyump.com/abc/def      => http://abc.masui.gyump.com/def        abc.masui          def     masui      abc/def
-  # http://abc.masui.gyump.com/def      => http://abc.masui.gyump.com/def        abc.masui          def     abc.masui  def
-  # http://abc.masui.gyump.com/def/ghi/ => http://ghi.def.abc.masui.gyump.com/   ghi.def.abc.masui  ''      abc.masui  def/ghi/
-  # http://abc.masui.gyump.com/def/ghi  => http://def.abc.masui.gyump.com/ghi    def.abc.masui      ghi     abc.masui  def/ghi
-
-  # URLから取得される @host, @short から name, id を計算する
   #
-  # ユーザ指定URL                          整形後URL                             name               id      @host      @short
-  # -----------------------------------------------------------------------------------------------------------------
-  # http://gyump.com/masui/             => http://masui.gyump.com/               masui              ''      ''         masui/
-  # http://gyump.com/masui              => http://masui.gyump.com/               masui              ''      ''         masui           # case1
-  # http://gyump.com/masui/abc          => http://masui.gyump.com/abc            masui              abc     ''         masui/abc
-  # http://gyump.com/masui/abc/def      => http://abc.masui.gyump.com/def        abc.masui          def     ''         masui/abc/def
-  # http://abc.masui.gyump.com/         => http://abc.masui.gyump.com/           abc.masui          ''      abc.masui  ''
-  # http://masui.gyump.com/abc/         => http://abc.masui.gyump.com/           abc.masui          ''      masui      abc/
-  # http://masui.gyump.com/abc          => http://masui.gyump.com/abc            masui              abc     masui      abc
-  # http://masui.gyump.com/abc/def/     => http://def.abc.masui.gyump.com/       def.abc.masui      ''      masui      abc/def/
-  # http://masui.gyump.com/abc/def      => http://abc.masui.gyump.com/def        abc.masui          def     masui      abc/def
-  # http://abc.masui.gyump.com/def      => http://abc.masui.gyump.com/def        abc.masui          def     abc.masui  def
-  # http://abc.masui.gyump.com/def/ghi/ => http://ghi.def.abc.masui.gyump.com/   ghi.def.abc.masui  ''      abc.masui  def/ghi/
-  # http://abc.masui.gyump.com/def/ghi  => http://def.abc.masui.gyump.com/ghi    def.abc.masui      ghi     abc.masui  def/ghi
-
-  # サブドメイン表記ができない場合
-  # http://localhost/~masui/Gyump/masui/                                         masui              ''      ''         masui/
-  # http://localhost/~masui/Gyump/masui/abc                                      masui              abc     ''         masui/abc
-  # http://localhost/~masui/Gyump/masui/abc/def                                  abc.masui          def     ''         masui/abc/def
-  # http://localhost/~masui/Gyump/masui/abc/def/                                 def.abc.masui      ''      ''         masui/abc/def/
-
-  # subdomain と arg から subdomain と short を作ればいいかな?
-  #
-  #                                            URLから取得 URLから取得
-  # ユーザ指定URL                                subdomain  arg            table             id
+  #                                hostname_subdomain(HTTP_HOST)で計算  CGI引数        table_id(subdomain,arg)で計算
+  # ユーザ指定URL                                hostname   subdomain   arg             table              id
   # ------------------------------------------------------------------------------------------------------------------
-  # http://gyump.com/masui/                      ''         masui/         masui             ''
-  # http://gyump.com/masui                       ''         masui          masui             ''
-  # http://gyump.com/masui/abc                   ''         masui/abc      masui             abc
-  # http://gyump.com/masui/abc/def               ''         masui/abc/def  abc.masui         def
-  # http://abc.masui.gyump.com/                  abc.masui  ''             abc.masui         ''
-  # http://masui.gyump.com/abc/                  masui      abc/           abc.masui         ''
-  # http://masui.gyump.com/abc                   masui      abc            masui             abc
-  # http://masui.gyump.com/abc/def/              masui      abc/def/       def.abc.masui     ''
-  # http://masui.gyump.com/abc/def               masui      abc/def        abc.masui         def
-  # http://abc.masui.gyump.com/def               abc.masui  def            abc.masui         def
-  # http://abc.masui.gyump.com/def/ghi/          abc.masui  def/ghi/       ghi.def.abc.masui ''
-  # http://abc.masui.gyump.com/def/ghi           abc.masui  def/ghi        def.abc.masui     ghi
-  # http://localhost/~masui/Gyump/masui/         ''         masui/         masui             ''
-  # http://localhost/~masui/Gyump/masui/abc      ''         masui/abc      masui             abc
-  # http://localhost/~masui/Gyump/masui/abc/def  ''         masui/abc/def  abc.masui         def
-  # http://localhost/~masui/Gyump/masui/abc/def/ ''         masui/abc/def/ def.abc.masui     ''
+  # http://gyump.com/masui/                      gyump.com  ''          masui/          masui              ''
+  # http://gyump.com/masui                       gyump.com  ''          masui           masui              '' => redirect
+  # http://gyump.com/masui/abc                   gyump.com  ''          masui/abc       masui              abc
+  # http://gyump.com/masui/abc/def               gyump.com  ''          masui/abc/def   abc.masui          def
+  # http://abc.masui.gyump.com/                  gyump.com  abc.masui   ''              abc.masui          ''
+  # http://masui.gyump.com/abc/                  gyump.com  masui       abc/            abc.masui          ''
+  # http://masui.gyump.com/abc                   gyump.com  masui       abc             masui              abc
+  # http://masui.gyump.com/abc/def/              gyump.com  masui       abc/def/        def.abc.masui      ''
+  # http://masui.gyump.com/abc/def               gyump.com  masui       abc/def         abc.masui          def
+  # http://abc.masui.gyump.com/def               gyump.com  abc.masui   def             abc.masui          def
+  # http://abc.masui.gyump.com/def/ghi/          gyump.com  abc.masui   def/ghi/        ghi.def.abc.masui  ''
+  # http://abc.masui.gyump.com/def/ghi           gyump.com  abc.masui   def/ghi         def.abc.masui      ghi
+  # http://localhost/~masui/Gyump/masui/         localhost  ''          masui/          masui              ''
+  # http://localhost/~masui/Gyump/masui/abc      localhost  ''          masui/abc       masui              abc
+  # http://localhost/~masui/Gyump/masui/abc/def  localhost  ''          masui/abc/def   abc.masui          def
+  # http://localhost/~masui/Gyump/masui/abc/def/ localhost  ''          masui/abc/def/  def.abc.masui      ''
 
-  def test
-    @hostname = `hostname`.chomp
-    @envhost = ENV['HTTP_HOST']
-    @arghost = @cgi['host'].to_s
-    @short = @cgi['short'].to_s
-    @aa = @cgi['aa'].to_s
-    @cgistr = @cgi.to_s
-    #@cgiargs = @cgi.keys.map { |key|
-    #  "cgi[#{key}] = #{@cgi[key]}"
-    #}.join("<br>")
-    @cgi.out {
-      erb :test
-    }
-  end
-
-  def log(s)
-    File.open("log/log","a"){ |f|
-      f.puts s
-    }
-  end
-
-  def convert(host,short)
-    log "convert(#{host},#{short})"
-    #baselen = 0
-    if host == '' && short !~ /\// then # case1
-      print @cgi.header({'status' => 'REDIRECT', 'Location' => "#{ENV['REQUEST_URI']}/", 'Time' => Time.now})
-      exit
-      #short += '/'
-      #baselen = -1
-    end
-    log "convert...(#{host},#{short})"
-    if short =~ /^(.*)\/$/ then
-      a = $1.split(/\//).reverse
-      id = ''
-    else
-      a = short.split(/\//).reverse
-      id = a.shift.to_s
-    end
-    a += host.split(/\./)
-    return [a.join('.'),a.length,id]
-  end
-
-  def hostname_table(http_host, table=nil)
-    a = ("."+http_host.to_s).split('.')
-    hostname = a[-2..-1].to_a.join('.').sub(/^\./,'')
-    table = a[0..-3].to_a.join('.').sub(/^\./,'') unless table
-    [hostname, table]
-  end
-
-  def hostname_subdomain(http_host)
+  def hostname_subdomain(http_host) # "masui.gyump.com" => ["gyump.com", "masui"]
     a = ("."+http_host.to_s).split('.')
     hostname = a[-2..-1].to_a.join('.').sub(/^\./,'')
     subdomain = a[0..-3].to_a.join('.').sub(/^\./,'')
     [hostname, subdomain]
+  end
+
+  def table_id(host,arg)  # ("gyump.com", "masui/abc") => ["masui", 1, "abc"]
+    log "table_id(#{host},#{arg})"
+    if host == '' && arg !~ /\// then # case1
+      print @cgi.header({'status' => 'REDIRECT', 'Location' => "#{ENV['REQUEST_URI']}/", 'Time' => Time.now})
+      exit
+    end
+    log "table_id...(#{host},#{arg})"
+    if arg =~ /^(.*)\/$/ then
+      a = $1.split(/\//).reverse
+      id = ''
+    else
+      a = arg.split(/\//).reverse
+      id = a.shift.to_s
+    end
+    a += host.split(/\./)
+    return [a.join('.'),a.length,id]
   end
 
   def initialize(cgi=nil)
@@ -139,14 +69,6 @@ class Gyump
     }
     
     @cgi = cgi || CGI.new('html3') # テスト / 運用
-    
-    # @hostname = `hostname`.chomp
-    # log "@hostname = #{@hostname}"
-    # #ENV['HTTP_HOST'] =~ /^(.*)memo.#{@hostname}$/
-    # ENV['HTTP_HOST'] =~ /^(.*)#{@hostname}$/
-    # @host = @cgi['host'].to_s
-    # @host = $1.to_s.sub(/\.$/,'') if @host == ''
-    # log "http_host = #{ENV['HTTP_HOST']} @host=#{@host}"
 
     @short = @cgi['short'].to_s
     @long = @cgi['long'].to_s
@@ -154,7 +76,6 @@ class Gyump
     @tags = @cgi['tags'].to_s
     @comment = @cgi['comment'].to_s
 
-    # (@hostname, @table) = hostname_table(ENV['HTTP_HOST'], @cgi['table'])
     (@hostname, @subdomain) = hostname_subdomain(ENV['HTTP_HOST'])
 
     log "http_host = #{ENV['HTTP_HOST']}"
@@ -163,36 +84,19 @@ class Gyump
     log "subdomain = #{@subdomain}"
     log "short = #{@short}"
 
-    # (@host,@short) = convert(@host,@short)
-    
-    #(@host,@short) = convert("#{@table}.#{@hostname}".sub(/^\./,''),@short)
-    #(@table,@short) = convert(@table,@short)
-
     @subdomain = @cgi['table'] if @cgi['table'].to_s != ''
     
-    (@table,@tablelen,@short) = convert(@subdomain,@short)
-    #@table = @cgi['table'] if @cgi['table'].to_s != ''
+    (@table,@tablelen,@short) = table_id(@subdomain,@short)
     
-    log "after convert: table = #{@table}"
+    log "after table_id: table = #{@table}"
     log "short = #{@short}"
 
-    #@hostname = ENV['HTTP_HOST']
-    @root = "#{@table}.#{@hostname}"
-    @base = (['..'] * @tablelen).join('/')
+    @root = "#{@table}.#{@hostname}"       # e.g. "masui.localhost", "masui.gyump.com"
+    @base = (['..'] * @tablelen).join('/') # e.g. "..", "../.."
     log "base = #{@base}"
 
     log "#{Time.now.strftime('%Y%m%d%H%M%S')} root=#{@root}"
-    log "After convert: hostname=#{@hostname}, host=#{@host}, long=#{@long}, short=#{@short}, title=#{@title}, tags=#{@tags}, comment=#{@comment}"
-
-    # After convert: hostname=masui.org, host=memo, long=, short=s, title=, tags=, comment=
-
-    # http://memo.masui.org/s の場合
-    # Before convert: hostname=masui.org, host=memo, long=, short=s, title=, tags=, comment=
-    # After convert: hostname=masui.org, host=memo, long=, short=s, title=, tags=, comment=
-                                                                  
-    # http://localhost/~masui/Gyump/xxx/
-    # Before convert: hostname=ToshiyukinoMBP, host=, long=, short=xxx/3, title=, tags=, comment=
-    # After convert: hostname=ToshiyukinoMBP, host=xxx, long=, short=3, title=, tags=, comment=
+    log "After table_id: hostname=#{@hostname}, host=#{@host}, long=#{@long}, short=#{@short}, title=#{@title}, tags=#{@tags}, comment=#{@comment}"
 
     @short2 = @short.sub(/!$/,'')
     @ind = "#{@table}/#{@short2}"
@@ -401,6 +305,12 @@ class Gyump
     ERB.new(File.read("views/#{template.to_s}.erb")).result(binding)
   end
 
+  def log(s)
+    File.open("log/log","a"){ |f|
+      f.puts s
+    }
+  end
+
   def run
     log "run: short=#{@short}"
     if iphone? then
@@ -443,12 +353,12 @@ if __FILE__ == $0 then
       assert_equal  gyump.hostname_subdomain('masui.gyump.com'), ['gyump.com', 'masui']
     end
 
-    def test_convert
+    def test_table_id
       gyump = Gyump.new({})
-      assert_equal  gyump.convert('cat.masui','abc'), ['cat.masui', 'abc']
-      assert_equal  gyump.convert('cat.masui','abc/'), ['abc.cat.masui', '']
-      assert_equal  gyump.convert('cat.masui','abc/def'), ['abc.cat.masui', 'def']
-      assert_equal  gyump.convert('cat.masui','abc/def/'), ['def.abc.cat.masui', '']
+      assert_equal  gyump.table_id('cat.masui','abc'), ['cat.masui', 'abc']
+      assert_equal  gyump.table_id('cat.masui','abc/'), ['abc.cat.masui', '']
+      assert_equal  gyump.table_id('cat.masui','abc/def'), ['abc.cat.masui', 'def']
+      assert_equal  gyump.table_id('cat.masui','abc/def/'), ['def.abc.cat.masui', '']
     end
   end
 end
