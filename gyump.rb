@@ -45,6 +45,28 @@ class Gyump
   # http://localhost/~masui/Gyump/masui/abc/def                                  abc.masui          def     ''         masui/abc/def
   # http://localhost/~masui/Gyump/masui/abc/def/                                 def.abc.masui      ''      ''         masui/abc/def/
 
+  # subdomain と arg から subdomain と short を作ればいいかな?
+  #
+  #                                            URLから取得 URLから取得
+  # ユーザ指定URL                                subdomain  arg            table             id
+  # ------------------------------------------------------------------------------------------------------------------
+  # http://gyump.com/masui/                      ''         masui/         masui             ''
+  # http://gyump.com/masui                       ''         masui          masui             ''
+  # http://gyump.com/masui/abc                   ''         masui/abc      masui             abc
+  # http://gyump.com/masui/abc/def               ''         masui/abc/def  abc.masui         def
+  # http://abc.masui.gyump.com/                  abc.masui  ''             abc.masui         ''
+  # http://masui.gyump.com/abc/                  masui      abc/           abc.masui         ''
+  # http://masui.gyump.com/abc                   masui      abc            masui             abc
+  # http://masui.gyump.com/abc/def/              masui      abc/def/       def.abc.masui     ''
+  # http://masui.gyump.com/abc/def               masui      abc/def        abc.masui         def
+  # http://abc.masui.gyump.com/def               abc.masui  def            abc.masui         def
+  # http://abc.masui.gyump.com/def/ghi/          abc.masui  def/ghi/       ghi.def.abc.masui ''
+  # http://abc.masui.gyump.com/def/ghi           abc.masui  def/ghi        def.abc.masui     ghi
+  # http://localhost/~masui/Gyump/masui/         ''         masui/         masui             ''
+  # http://localhost/~masui/Gyump/masui/abc      ''         masui/abc      masui             abc
+  # http://localhost/~masui/Gyump/masui/abc/def  ''         masui/abc/def  abc.masui         def
+  # http://localhost/~masui/Gyump/masui/abc/def/ ''         masui/abc/def/ def.abc.masui     ''
+
   def test
     @hostname = `hostname`.chomp
     @envhost = ENV['HTTP_HOST']
@@ -68,28 +90,39 @@ class Gyump
 
   def convert(host,short)
     log "convert(#{host},#{short})"
+    baselen = 0
     if host == '' && short !~ /\// then # case1
       short += '/'
+      baselen = -1
     end
     log "convert...(#{host},#{short})"
     if short =~ /^(.*)\/$/ then
-      a1 = $1.split(/\//).reverse
+      a = $1.split(/\//).reverse
       id = ''
     else
-      a1 = short.split(/\//).reverse
-      id = a1.shift.to_s
+      a = short.split(/\//).reverse
+      id = a.shift.to_s
     end
-    a2 = host.split(/\./)
-    log "convert_ret(#{(a1 + a2).join('.')},#{id})"
-    return [(a1 + a2).join('.'),id]
+    a += host.split(/\./)
+    return [a.join('.'),id,a.length+baselen]
   end
 
-  def erb(template)
-    ERB.new(File.read("views/#{template.to_s}.erb")).result(binding)
+  def hostname_table(http_host, table=nil)
+    a = ("."+http_host.to_s).split('.')
+    hostname = a[-2..-1].to_a.join('.').sub(/^\./,'')
+    table = a[0..-3].to_a.join('.').sub(/^\./,'') unless table
+    [hostname, table]
+  end
+
+  def hostname_subdomain(http_host)
+    a = ("."+http_host.to_s).split('.')
+    hostname = a[-2..-1].to_a.join('.').sub(/^\./,'')
+    subdomain = a[0..-3].to_a.join('.').sub(/^\./,'')
+    [hostname, subdomain]
   end
 
   def initialize(cgi=nil)
-    log "initialize"
+    log "initialize========================"
     
     @dbm = SDBM.open('db/db',0666)
     @titledbm = SDBM.open('db/titledb',0666)
@@ -119,21 +152,31 @@ class Gyump
     @tags = @cgi['tags'].to_s
     @comment = @cgi['comment'].to_s
 
-    @http_host = ENV['HTTP_HOST']  # 'localhost', 'gyump.com', 'memo.masui.org'
-    a = ("."+@http_host).split('.')
-    @hostname = a[-2..-1].to_a.join('.').sub(/^\./,'')
+    # (@hostname, @table) = hostname_table(ENV['HTTP_HOST'], @cgi['table'])
+    (@hostname, @subdomain) = hostname_subdomain(ENV['HTTP_HOST'])
 
-    @subdomain = @cgi['host'].to_s
-    @subdomain = a[0..-3].to_a.join('.').sub(/^\./,'')  unless @subdomain
+    log "http_host = #{ENV['HTTP_HOST']}"
+    log "cgitable = #{@cgi['table']}"
+    log "hostname = #{@hostname}"
+    log "subdomain = #{@subdomain}"
+    log "short = #{@short}"
 
-    log "Before convert: hostname=#{@hostname}, host=#{@host}, long=#{@long}, short=#{@short}, title=#{@title}, tags=#{@tags}, comment=#{@comment}"
     # (@host,@short) = convert(@host,@short)
-    (@host,@short) = convert(@subdomain,@short)
+    
+    #(@host,@short) = convert("#{@table}.#{@hostname}".sub(/^\./,''),@short)
+    #(@table,@short) = convert(@table,@short)
+
+    @subdomain = @cgi['table'] if @cgi['table'].to_s != ''
+    
+    (@table,@short,baselen) = convert(@subdomain,@short)
+    #@table = @cgi['table'] if @cgi['table'].to_s != ''
+    
+    log "after convert: table = #{@table}"
+    log "short = #{@short}"
 
     #@hostname = ENV['HTTP_HOST']
-    #@root = "#{@host}.#{@hostname}"
-    @root = "#{@host}.#{@hostname}"
-    @base = (['..'] * @host.split(/\./).length).join('/')
+    @root = "#{@table}.#{@hostname}"
+    @base = (baselen == 0 ? '.' : (['..'] * baselen).join('/'))
     log "base = #{@base}"
 
     log "#{Time.now.strftime('%Y%m%d%H%M%S')} root=#{@root}"
@@ -150,7 +193,7 @@ class Gyump
     # After convert: hostname=ToshiyukinoMBP, host=xxx, long=, short=3, title=, tags=, comment=
 
     @short2 = @short.sub(/!$/,'')
-    @ind = "#{@host}/#{@short2}"
+    @ind = "#{@table}/#{@short2}"
     @register = @cgi['register'].to_s
 
     log "register=#{@register}, ind=#{@ind}, title=#{@title}"
@@ -171,13 +214,13 @@ class Gyump
   end
 
   def google
-    log "#{Time.now.strftime('%Y%m%d%H%M%S')} #{@host} #{@short} (Google)"
+    log "#{Time.now.strftime('%Y%m%d%H%M%S')} #{@table} #{@short} (Google)"
 
     print @cgi.header({'status' => 'MOVED', 'Location' => "http://google.com/search?q=#{@short}"})
   end
 
   def index?
-    @short == '' && @host == ''
+    @short == '' && @table == ''
   end
 
   def index
@@ -195,7 +238,7 @@ class Gyump
       # @dbm.each { |key,value|
       @dbm.keys.each { |key|
         value = @dbm[key]
-        if key =~ /^#{@host}\/(.*)/ then
+        if key =~ /^#{@table}\/(.*)/ then
           data[$1] = value
           title[$1] = @titledbm[key]
         end
@@ -220,7 +263,7 @@ class Gyump
     # @dbm.each { |key,value|
     @dbm.keys.each { |key|
       value = @dbm[key]
-      if key =~ /^#{@host}\/(.*)/ then
+      if key =~ /^#{@table}\/(.*)/ then
         @data[$1] = value
         @title[$1] = @titledbm[key]
         s = @datedbm[key].to_s
@@ -243,7 +286,7 @@ class Gyump
     data = {}
     title = {}
     @dbm.each { |key,value|
-      if key =~ /^#{@host}\/(.*)/ then
+      if key =~ /^#{@table}\/(.*)/ then
         k = $1
         #if value =~ /\.(jpg|png|gif)$/ then
           data[k] = value
@@ -282,7 +325,7 @@ class Gyump
     # @dbm.each { |key,value| バグでこれが動かない?
     @dbm.keys.each { |key|
       value = @dbm[key]
-      if key =~ /^#{@host}\/(.*)/ then
+      if key =~ /^#{@table}\/(.*)/ then
         @data[$1] = value
         @titles[$1] = @titledbm[key]
         @comments[$1] = @commentdbm[key].to_s
@@ -352,6 +395,10 @@ class Gyump
     end
   end
 
+  def erb(template)
+    ERB.new(File.read("views/#{template.to_s}.erb")).result(binding)
+  end
+
   def run
     log "run: short=#{@short}"
     if iphone? then
@@ -387,11 +434,19 @@ if __FILE__ == $0 then
   class TestGyump < MiniTest::Test
     def setup
     end
+    
+    def test_hostname_subdomain
+      gyump = Gyump.new({})
+      assert_equal  gyump.hostname_subdomain('localhost'), ['localhost', '']
+      assert_equal  gyump.hostname_subdomain('masui.gyump.com'), ['gyump.com', 'masui']
+    end
 
     def test_convert
       gyump = Gyump.new({})
       assert_equal  gyump.convert('cat.masui','abc'), ['cat.masui', 'abc']
+      assert_equal  gyump.convert('cat.masui','abc/'), ['abc.cat.masui', '']
       assert_equal  gyump.convert('cat.masui','abc/def'), ['abc.cat.masui', 'def']
+      assert_equal  gyump.convert('cat.masui','abc/def/'), ['def.abc.cat.masui', '']
     end
   end
 end

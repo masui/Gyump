@@ -33,7 +33,7 @@
              d = @data[key].gsub(/</,'&lt;')
 				     t = @titles[key].to_s
 				     t = d if t == ''
-				     s = (d =~ /^(http|javascript)/ ? "<a href='#{d}'>#{t}</a>" : "<a href='http://#{@root}/#{key}'>#{t}</a>")
+				     s = (d =~ /^(http|javascript)/ ? "<a href='#{d}'>#{t}</a>" : "<a href='#{key}'>#{t}</a>")
 				     comment = @comments[key]
 				     c = (comment ? "<br>#{comment}" : "")
 				     %>
