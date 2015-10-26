@@ -90,10 +90,12 @@ class Gyump
 
   def convert(host,short)
     log "convert(#{host},#{short})"
-    baselen = 0
+    #baselen = 0
     if host == '' && short !~ /\// then # case1
-      short += '/'
-      baselen = -1
+      print @cgi.header({'status' => 'REDIRECT', 'Location' => "#{ENV['REQUEST_URI']}/", 'Time' => Time.now})
+      exit
+      #short += '/'
+      #baselen = -1
     end
     log "convert...(#{host},#{short})"
     if short =~ /^(.*)\/$/ then
@@ -104,7 +106,7 @@ class Gyump
       id = a.shift.to_s
     end
     a += host.split(/\./)
-    return [a.join('.'),id,a.length+baselen]
+    return [a.join('.'),a.length,id]
   end
 
   def hostname_table(http_host, table=nil)
@@ -168,7 +170,7 @@ class Gyump
 
     @subdomain = @cgi['table'] if @cgi['table'].to_s != ''
     
-    (@table,@short,baselen) = convert(@subdomain,@short)
+    (@table,@tablelen,@short) = convert(@subdomain,@short)
     #@table = @cgi['table'] if @cgi['table'].to_s != ''
     
     log "after convert: table = #{@table}"
@@ -176,7 +178,7 @@ class Gyump
 
     #@hostname = ENV['HTTP_HOST']
     @root = "#{@table}.#{@hostname}"
-    @base = (baselen == 0 ? '.' : (['..'] * baselen).join('/'))
+    @base = (['..'] * @tablelen).join('/')
     log "base = #{@base}"
 
     log "#{Time.now.strftime('%Y%m%d%H%M%S')} root=#{@root}"
