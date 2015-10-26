@@ -4,22 +4,12 @@
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
     <link href="<%= @base %>/stylesheets/bootstrap.css" rel="stylesheet" media="screen">
     <link href="<%= @base %>/stylesheets/memo.css" rel="stylesheet" media="screen">
-
     <TITLE><%= @title %></TITLE>
-
     <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <!-- <script src="<%= @base %>/javascripts/bootstrap.js"></script> -->
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
   </head>
   <body style="margin:5pt;">
-
-  <h3><a href="<%= @base %>/<%= @table %>/"><%= @root %></a> / <i class="keyword"><%= @short2 %></i></h3>
-
-  <%= form(@short2,@long,@title) %>
-
-  <!--
-  <hr>
-  <a class="btn btn-info btn-small" href="javascript:(function(){if(window.sidebar){window.sidebar.addPanel(window.title,location.href,'')}else{window.external.AddFavorite(location.href,window.title);}})()">Bookmark this page</a>
-  -->
+    <h3><a href="<%= @base %>/<%= @table %>/"><%= @root %></a> / <i class="keyword"><%= @id2 %></i></h3>
+    <%= form(@id2,@long,@title) %>
   </body>
 </html>

@@ -70,7 +70,7 @@ class Gyump
     
     @cgi = cgi || CGI.new('html3') # テスト / 運用
 
-    @short = @cgi['short'].to_s
+    @arg = @cgi['arg'].to_s
     @long = @cgi['long'].to_s
     @title = @cgi['title'].to_s
     @tags = @cgi['tags'].to_s
@@ -82,24 +82,24 @@ class Gyump
     log "cgitable = #{@cgi['table']}"
     log "hostname = #{@hostname}"
     log "subdomain = #{@subdomain}"
-    log "short = #{@short}"
+    log "arg = #{@arg}"
 
     @subdomain = @cgi['table'] if @cgi['table'].to_s != ''
+    @arg = @cgi['id'] if @cgi['id'].to_s != ''
     
-    (@table,@tablelen,@short) = table_id(@subdomain,@short)
+    (@table,@tablelen,@id) = table_id(@subdomain,@arg)
     
     log "after table_id: table = #{@table}"
-    log "short = #{@short}"
+    log "id = #{@id}"
 
     @root = "#{@table}.#{@hostname}"       # e.g. "masui.localhost", "masui.gyump.com"
     @base = (['..'] * @tablelen).join('/') # e.g. "..", "../.."
     log "base = #{@base}"
 
     log "#{Time.now.strftime('%Y%m%d%H%M%S')} root=#{@root}"
-    log "After table_id: hostname=#{@hostname}, host=#{@host}, long=#{@long}, short=#{@short}, title=#{@title}, tags=#{@tags}, comment=#{@comment}"
 
-    @short2 = @short.sub(/!$/,'')
-    @ind = "#{@table}/#{@short2}"
+    @id2 = @id.sub(/!$/,'')
+    @ind = "#{@table}/#{@id2}"
     @register = @cgi['register'].to_s
 
     log "register=#{@register}, ind=#{@ind}, title=#{@title}"
@@ -113,20 +113,17 @@ class Gyump
   end
 
   def valid?
-    # @short2.length == 3 || @short == ''
-    #(@short2.length == 3 || @dbm[@ind] || @register != '' || @short =~ /!$/ || @short == '') && (@short2 =~ /^[a-zA-Z0-9_\-]*$/)
-    #(@short2.length == 3 || @short == '') && (@short2 =~ /^[a-zA-Z0-9_]*$/)
-    (@dbm[@ind] || @register != '' || @short =~ /!$/ || @short == '') && (@short2 =~ /^[a-zA-Z0-9_\-]*$/)
+    (@dbm[@ind] || @register != '' || @id =~ /!$/ || @id == '') && (@id2 =~ /^[a-zA-Z0-9_\-]*$/)
   end
 
   def google
-    log "#{Time.now.strftime('%Y%m%d%H%M%S')} #{@table} #{@short} (Google)"
+    log "#{Time.now.strftime('%Y%m%d%H%M%S')} #{@table} #{@arg} (Google)"
 
-    print @cgi.header({'status' => 'MOVED', 'Location' => "http://google.com/search?q=#{@short}"})
+    print @cgi.header({'status' => 'MOVED', 'Location' => "http://google.com/search?q=#{@arg}"})
   end
 
   def index?
-    @short == '' && @table == ''
+    @id == '' && @table == ''
   end
 
   def index
@@ -134,7 +131,7 @@ class Gyump
   end
 
   def dumpdata?
-    @short == 'dumpdata'
+    @id == 'dumpdata'
   end
 
   def dumpdata
@@ -159,7 +156,7 @@ class Gyump
   end
 
   def atom?
-    @short == 'atom.xml'
+    @arg == 'atom.xml'
   end
 
   def atom
@@ -185,7 +182,7 @@ class Gyump
   end
 
   def dict?
-     @short == 'dict.js'
+     @arg == 'dict.js'
   end
 
   def dict
@@ -211,7 +208,7 @@ class Gyump
   end
 
   def iphone?
-    @short == 'iphone.html'
+    @arg == 'iphone.html'
   end
 
   def iphone
@@ -221,7 +218,7 @@ class Gyump
   end
 
   def list?
-    @short == '' && @long == ''
+    @id == '' && @long == ''
   end
 
   def getdata
@@ -247,9 +244,9 @@ class Gyump
 
   def edit?
     log "@long = #{@long}"
-    log "@short = #{@short}"
-    @long == '' && (@short =~ /!$/ || @dbm[@ind].to_s == '') ||
-      # @long != '' && @short == '' ||
+    log "@id = #{@id}"
+    @long == '' && (@id =~ /!$/ || @dbm[@ind].to_s == '') ||
+      # @long != '' && @id == '' ||
       # @register == '' && @long == '' && ENV['HTTP_REFERER'].to_s.index(@root) # Don't jump if accessed from the memo site.
       @register == '' && @long == '' && ENV['HTTP_REFERER'].to_s.index(ENV['HTTP_HOST']) # Don't jump if accessed from the memo site.
   end
@@ -272,7 +269,7 @@ class Gyump
   end
 
   def register
-    log "register: long = #{@long}, short=#{@short}, title = #{@title}"
+    log "register: long = #{@long}, id=#{@id}, title = #{@title}"
     @dbm[@ind] = (@long.length > 0 ? @long : nil)
     @titledbm[@ind] = @title
     @datedbm[@ind] = Time.now.strftime("%Y-%m-%dT%H:%M:%S+00:00")
@@ -284,7 +281,7 @@ class Gyump
   end
 
   def opensearch?
-    @short == 'opensearch'
+    @arg == 'opensearch'
   end
 
   def opensearch
@@ -312,7 +309,7 @@ class Gyump
   end
 
   def run
-    log "run: short=#{@short}"
+    log "run: id=#{@id}"
     if iphone? then
       iphone
     elsif opensearch? then
