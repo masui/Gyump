@@ -22,5 +22,4 @@ RewriteEngine on
 
 RewriteCond %{REQUEST_URI} !(gyump\.cgi)
 RewriteCond %{REQUEST_URI} !(stylesheets)
-RewriteCond %{REQUEST_URI} !(opensearch)
-RewriteRule ^(.*)$ gyump.cgi?arg=$1 [L]
+RewriteRule ^(.*)$ /gyump.cgi?arg=$1 [L]

@@ -11,8 +11,8 @@ class Gyump
   #                                hostname_subdomain(HTTP_HOST)で計算  CGI引数        table_id(subdomain,arg)で計算
   # ユーザ指定URL                                hostname   subdomain   arg             table              id
   # ------------------------------------------------------------------------------------------------------------------
+  # (http://gyump.com/masui                      gyump.com  ''          masui           masui              '' => masui/ に redirect)
   # http://gyump.com/masui/                      gyump.com  ''          masui/          masui              ''
-  # http://gyump.com/masui                       gyump.com  ''          masui           masui              '' => redirect
   # http://gyump.com/masui/abc                   gyump.com  ''          masui/abc       masui              abc
   # http://gyump.com/masui/abc/def               gyump.com  ''          masui/abc/def   abc.masui          def
   # http://abc.masui.gyump.com/                  gyump.com  abc.masui   ''              abc.masui          ''
@@ -281,7 +281,7 @@ class Gyump
   end
 
   def opensearch?
-    @arg == 'opensearch'
+    @arg =~ /^opensearch/
   end
 
   def opensearch
