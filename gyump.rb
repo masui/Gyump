@@ -36,12 +36,10 @@ class Gyump
   end
 
   def table_id(host,arg)  # ("gyump.com", "masui/abc") => ["masui", 1, "abc"]
-    log "table_id(#{host},#{arg})"
     if host == '' && arg !~ /\// then # case1
       print @cgi.header({'status' => 'REDIRECT', 'Location' => "#{ENV['REQUEST_URI']}/", 'Time' => Time.now})
       exit
     end
-    log "table_id...(#{host},#{arg})"
     if arg =~ /^(.*)\/$/ then
       a = $1.split(/\//).reverse
       id = ''
@@ -60,49 +58,27 @@ class Gyump
     @titledbm = SDBM.open('db/titledb',0666)
     @datedbm = SDBM.open('db/datedb',0666)
     @commentdbm = SDBM.open('db/commentdb',0666)
-    @tagsdbm = SDBM.open('db/tagsdb',0666)
 
-    File.open("/tmp/log","w"){ |f|
-      ENV.each { |key,val|
-        f.puts "ENV[#{key}] = #{val}"
-      }
-    }
-    
     @cgi = cgi || CGI.new('html3') # テスト / 運用
 
     @arg = @cgi['arg'].to_s
     @long = @cgi['long'].to_s
     @title = @cgi['title'].to_s
-    @tags = @cgi['tags'].to_s
     @comment = @cgi['comment'].to_s
 
-    (@hostname, @subdomain) = hostname_subdomain(ENV['HTTP_HOST'])
-
-    log "http_host = #{ENV['HTTP_HOST']}"
-    log "cgitable = #{@cgi['table']}"
-    log "hostname = #{@hostname}"
-    log "subdomain = #{@subdomain}"
-    log "arg = #{@arg}"
-
+    http_host = ENV['HTTP_HOST'] || "test.example.com"
+    (@hostname, @subdomain) = hostname_subdomain(http_host)
     @subdomain = @cgi['table'] if @cgi['table'].to_s != ''
     @arg = @cgi['id'] if @cgi['id'].to_s != ''
     
     (@table,@tablelen,@id) = table_id(@subdomain,@arg)
-    
-    log "after table_id: table = #{@table}"
-    log "id = #{@id}"
 
     @root = "#{@table}.#{@hostname}"       # e.g. "masui.localhost", "masui.gyump.com"
     @base = (['..'] * @tablelen).join('/') # e.g. "..", "../.."
-    log "base = #{@base}"
-
-    log "#{Time.now.strftime('%Y%m%d%H%M%S')} root=#{@root}"
 
     @id2 = @id.sub(/!$/,'')
     @ind = "#{@table}/#{@id2}"
     @register = @cgi['register'].to_s
-
-    log "register=#{@register}, ind=#{@ind}, title=#{@title}"
   end
 
   def form(id='',value='',title='')
@@ -258,7 +234,6 @@ class Gyump
     @title = title
     @long = long
     @comment = @commentdbm[@ind].to_s
-    @tags = @tagsdbm[@ind].to_s
     @cgi.out {
       erb :edit
     }
@@ -274,9 +249,7 @@ class Gyump
     @titledbm[@ind] = @title
     @datedbm[@ind] = Time.now.strftime("%Y-%m-%dT%H:%M:%S+00:00")
     @commentdbm[@ind] = @comment
-    @tagsdbm[@ind] = @tags
     
-    # @base = "."
     self.list
   end
 
@@ -289,9 +262,7 @@ class Gyump
   end
 
   def show
-    if @dbm[@ind].to_s =~ /^(http|javascript|coscriptrun)/ && # 2009/6/4 CoScripter対応
-        @nojump != 'true' then
-      # print @cgi.header({'status' => 'MOVED', 'Location' => @dbm[@ind].to_s, 'Time' => Time.now})
+    if @dbm[@ind].to_s =~ /^(http|javascript|coscriptrun)/ # 2009/6/4 CoScripter対応
       print @cgi.header({'status' => 'REDIRECT', 'Location' => @dbm[@ind].to_s, 'Time' => Time.now})
     else
       edit
@@ -352,10 +323,10 @@ if __FILE__ == $0 then
 
     def test_table_id
       gyump = Gyump.new({})
-      assert_equal  gyump.table_id('cat.masui','abc'), ['cat.masui', 'abc']
-      assert_equal  gyump.table_id('cat.masui','abc/'), ['abc.cat.masui', '']
-      assert_equal  gyump.table_id('cat.masui','abc/def'), ['abc.cat.masui', 'def']
-      assert_equal  gyump.table_id('cat.masui','abc/def/'), ['def.abc.cat.masui', '']
+      assert_equal  gyump.table_id('cat.masui','abc'), ['cat.masui', 2, 'abc']
+      assert_equal  gyump.table_id('cat.masui','abc/'), ['abc.cat.masui', 3, '']
+      assert_equal  gyump.table_id('cat.masui','abc/def'), ['abc.cat.masui', 3, 'def']
+      assert_equal  gyump.table_id('cat.masui','abc/def/'), ['def.abc.cat.masui', 4, '']
     end
   end
 end
